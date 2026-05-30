@@ -238,9 +238,11 @@
 
   .map-card-img {
     width: 100%;
+    max-width: 240px;
     border-radius: 12px;
     display: block;
-    margin-bottom: 12px;
+    margin: 0 auto 12px;
+    background: transparent;
   }
 
   .map-btn {
@@ -396,7 +398,7 @@
   }
 
   .modal {
-    background: #1A0F00;
+    background: #2a1a00;
     border: 1px solid var(--card-border);
     border-radius: 24px;
     padding: 28px 24px;
@@ -460,11 +462,16 @@
 
   .modal-image {
     width: 100%;
-    max-width: 260px;
+    max-width: 200px;
     display: block;
     margin: 0 auto 16px;
     border-radius: 12px;
     animation: fadeIn 0.5s ease 0.3s both;
+    background: transparent;
+  }
+
+  .modal-image.map-img {
+    max-width: 180px;
   }
 
   @keyframes fadeIn {
@@ -603,6 +610,14 @@
   <div class="history-section" id="history-section">
     <div class="history-label">— クリア済みミッション —</div>
     <div id="history-list"></div>
+  </div>
+
+  <!-- 🛠️ 開発用ボタン（本番前に削除） -->
+  <div style="margin-top:40px;padding:16px;border:1px dashed rgba(255,100,100,0.3);border-radius:12px;text-align:center;">
+    <div style="font-size:11px;color:rgba(255,100,100,0.5);letter-spacing:0.15em;margin-bottom:10px;">🛠️ 開発用 / 本番前に削除</div>
+    <button onclick="devReset()" style="background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.3);border-radius:10px;padding:10px 20px;color:rgba(255,150,150,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">
+      Mission 3 までクリア状態にリセット
+    </button>
   </div>
 
 </div>
@@ -863,7 +878,8 @@
     if (image) {
       img.src = image;
       img.style.display = 'block';
-      img.style.mixBlendMode = 'multiply';
+      img.style.mixBlendMode = '';
+      img.className = 'modal-image' + (image === 'miraitizu.png' ? ' map-img' : '');
     } else {
       img.style.display = 'none';
     }
@@ -903,6 +919,13 @@
   document.getElementById('answer-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') submitAnswer();
   });
+
+  // ===== 🛠️ 開発用リセット =====
+  function devReset() {
+    state = { cleared: [1, 2, 3] };
+    saveState(state);
+    updateUI();
+  }
 
   // ===== 初期化 =====
   makeStars();
