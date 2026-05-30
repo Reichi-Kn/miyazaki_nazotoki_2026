@@ -217,13 +217,38 @@
     transform: scale(0.96);
   }
 
-  /* みらいちずボタン */
+  /* みらいちずカード */
+  .map-card {
+    background: linear-gradient(135deg, rgba(26,107,74,0.25), rgba(45,155,110,0.15));
+    border: 1px solid rgba(45,155,110,0.45);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 20px;
+    -webkit-tap-highlight-color: transparent;
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  .map-card-label {
+    font-size: 11px;
+    color: #6effc0;
+    letter-spacing: 0.2em;
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+
+  .map-card-img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
   .map-btn {
     width: 100%;
     background: linear-gradient(135deg, #1a6b4a, #2d9b6e);
     border: 1px solid rgba(45,155,110,0.5);
-    border-radius: 16px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 16px;
     font-family: 'Zen Maru Gothic', sans-serif;
     font-size: 16px;
     font-weight: 700;
@@ -233,10 +258,8 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 20px;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.15s;
-    animation: pulse-green 2s ease-in-out infinite;
   }
 
   .map-btn:active { transform: scale(0.97); }
@@ -544,10 +567,12 @@
     </div>
   </div>
 
-  <!-- みらいちずボタン（4問クリア後に表示） -->
-  <button class="map-btn" id="map-btn" style="display:none" onclick="useMapBtn()">
-    🗺️ みらいちずを使う！
-  </button>
+  <!-- みらいちずカード（4問クリア後に表示） -->
+  <div class="map-card" id="map-card" style="display:none">
+    <div class="map-card-label">✦ アイテムを入手した！</div>
+    <img class="map-card-img" src="miraitizu.png" alt="みらいちず">
+    <button class="map-btn" onclick="useMapBtn()">🗺️ みらいちずを使う！</button>
+  </div>
 
   <!-- 全クリ表示 -->
   <div class="completed-card" id="completed-card" style="display:none">
@@ -682,10 +707,10 @@
       document.getElementById('completed-card').style.display = 'block';
     }
 
-    // みらいちずボタン
+    // みらいちずカード
     const mapCleared = state.cleared.includes(4);
     const mapUsed = state.mapUsed;
-    document.getElementById('map-btn').style.display = (mapCleared && !mapUsed) ? 'flex' : 'none';
+    document.getElementById('map-card').style.display = (mapCleared && !mapUsed) ? 'block' : 'none';
 
     // 履歴
     renderHistory();
@@ -695,50 +720,75 @@
     const list = document.getElementById('history-list');
     const section = document.getElementById('history-section');
 
-    if (state.cleared.length === 0) {
+    // みらいちず使用済みなら「黄金のマンゴー」も履歴に追加
+    const items = [...state.cleared];
+    const showMangoHistory = state.mapUsed;
+
+    if (items.length === 0 && !showMangoHistory) {
       section.style.display = 'none';
       return;
     }
     section.style.display = 'block';
     list.innerHTML = '';
 
-    state.cleared.forEach(qId => {
+    items.forEach(qId => {
       const q = QUIZZES.find(x => x.id === qId);
       if (!q) return;
 
-      // 4問目クリア && みらいちず使用済み → マンゴーも表示
-      const showMango = (qId === 4 && state.mapUsed);
-
       const item = document.createElement('div');
       item.className = 'history-item';
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => reopenModal(q));
 
       item.innerHTML = `
-        <div class="history-item-header" onclick="toggleHistory(this)">
+        <div class="history-item-header">
           <div class="history-item-left">
             <div class="history-badge">${qId}</div>
             <div class="history-mission-name">${q.name}</div>
           </div>
-          <span class="history-chevron">▾</span>
-        </div>
-        <div class="history-content">
-          <div class="history-inner">
-            <div class="history-correct-badge">✦ 正解！ 「${q.answer}」</div>
-            <div class="history-comment">${q.comment}</div>
-            ${q.image ? `<img class="history-image" src="${q.image}" alt="みらいちず" style="mix-blend-mode:multiply; background:transparent;">` : ''}
-            ${showMango ? `<img class="history-image" src="ougonnomango.png" alt="黄金のマンゴー" style="mix-blend-mode:multiply; background:transparent;">` : ''}
-          </div>
+          <span style="font-size:13px;color:rgba(255,248,231,0.4);">タップで見る ›</span>
         </div>
       `;
       list.appendChild(item);
     });
+
+    // みらいちず使用済み → マンゴーの履歴カードも追加
+    if (showMangoHistory) {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => {
+        showModal({
+          icon: '🥭',
+          title: '黄金のマンゴー発見！！',
+          titleClass: '',
+          comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+          image: 'ougonnomango.png',
+          onClose: null
+        });
+      });
+      item.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-item-left">
+            <div class="history-badge" style="background:linear-gradient(135deg,#C47D0E,#FFD580);">🥭</div>
+            <div class="history-mission-name">黄金のマンゴー</div>
+          </div>
+          <span style="font-size:13px;color:rgba(255,248,231,0.4);">タップで見る ›</span>
+        </div>
+      `;
+      list.appendChild(item);
+    }
   }
 
-  function toggleHistory(header) {
-    const content = header.nextElementSibling;
-    const chevron = header.querySelector('.history-chevron');
-    const isOpen = content.classList.contains('open');
-    content.classList.toggle('open', !isOpen);
-    chevron.classList.toggle('open', !isOpen);
+  function reopenModal(q) {
+    showModal({
+      icon: '🎉',
+      title: '正解！！',
+      titleClass: '',
+      comment: q.comment,
+      image: q.image,
+      onClose: null
+    });
   }
 
   // ===== 解答送信 =====
@@ -770,7 +820,7 @@
         title: '正解！！',
         titleClass: '',
         comment: q.comment,
-        image: q.image,
+        image: q.image,   // Mission4はみらいちず画像がここに入る
         onClose: () => { updateUI(); }
       });
     } else {
@@ -788,28 +838,17 @@
 
   // ===== みらいちず使う =====
   function useMapBtn() {
-    showModal({
-      icon: '🗺️',
-      title: 'みらいちずをゲット！！',
-      titleClass: '',
-      comment: 'これで黄金のマンゴーのありかがわかるはず！！\nさあ、マンゴーを探しに行こう！',
-      image: 'miraitizu.png',
-      onClose: () => {
-        state.mapUsed = true;
-        saveState(state);
+    state.mapUsed = true;
+    saveState(state);
+    updateUI();
 
-        // クリア画面表示
-        setTimeout(() => {
-          showModal({
-            icon: '🥭',
-            title: '黄金のマンゴー発見！！',
-            titleClass: '',
-            comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
-            image: 'ougonnomango.png',
-            onClose: () => { updateUI(); }
-          });
-        }, 300);
-      }
+    showModal({
+      icon: '🥭',
+      title: '黄金のマンゴー発見！！',
+      titleClass: '',
+      comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+      image: 'ougonnomango.png',
+      onClose: () => { updateUI(); }
     });
   }
 
