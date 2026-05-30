@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>黄金のマンゴーを探せ！</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Kaisei+Decol:wght@400;700&display=swap');
+
+  :root {
+    --gold: #F5A623;
+    --gold-light: #FFD580;
+    --gold-dark: #C47D0E;
+    --cream: #FFF8E7;
+    --dark: #1A0F00;
+    --brown: #5C3A00;
+    --bg: #0D0800;
+    --card: rgba(255,248,231,0.07);
+    --card-border: rgba(245,166,35,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 星空背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(245,166,35,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(245,166,35,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 100%, rgba(245,166,35,0.03) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+    opacity: 0;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: var(--o, 0.6); transform: scale(1); }
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 100px;
+  }
+
+  /* ヘッダー */
+  .header {
+    text-align: center;
+    padding: 32px 0 20px;
+  }
+
+  .header-title {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 6px;
+  }
+
+  .header-main {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FFD580 0%, #F5A623 50%, #C47D0E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+  }
+
+  /* プログレス */
+  .progress-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+
+  .progress-mission {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 14px;
+  }
+
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  .progress-nums {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 11px;
+    color: rgba(255,248,231,0.4);
+  }
+
+  /* 解答エリア */
+  .answer-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .answer-label {
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .answer-input-wrap {
+    display: flex;
+    gap: 10px;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 16px;
+    color: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .answer-input::placeholder { color: rgba(255,248,231,0.3); }
+
+  .answer-input:focus {
+    border-color: var(--gold);
+    background: rgba(245,166,35,0.06);
+  }
+
+  .answer-btn {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border: none;
+    border-radius: 14px;
+    padding: 14px 20px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .answer-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* みらいちずカード */
+  .map-card {
+    background: linear-gradient(135deg, rgba(26,107,74,0.25), rgba(45,155,110,0.15));
+    border: 1px solid rgba(45,155,110,0.45);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 20px;
+    -webkit-tap-highlight-color: transparent;
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  .map-card-label {
+    font-size: 11px;
+    color: #6effc0;
+    letter-spacing: 0.2em;
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+
+  .map-card-img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .map-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #1a6b4a, #2d9b6e);
+    border: 1px solid rgba(45,155,110,0.5);
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #e0fff2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+  }
+
+  .map-btn:active { transform: scale(0.97); }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(45,155,110,0.4); }
+    50% { box-shadow: 0 0 20px 6px rgba(45,155,110,0.2); }
+  }
+
+  /* 履歴セクション */
+  .history-section {
+    margin-top: 8px;
+  }
+
+  .history-label {
+    font-size: 11px;
+    color: rgba(255,248,231,0.4);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .history-item {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .history-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .history-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .history-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    flex-shrink: 0;
+  }
+
+  .history-mission-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .history-chevron {
+    font-size: 18px;
+    color: var(--gold);
+    transition: transform 0.3s;
+    opacity: 0.6;
+  }
+
+  .history-chevron.open { transform: rotate(180deg); }
+
+  .history-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .history-content.open {
+    max-height: 600px;
+  }
+
+  .history-inner {
+    padding: 0 16px 16px;
+    border-top: 1px solid rgba(245,166,35,0.12);
+  }
+
+  .history-correct-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,166,35,0.15);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--gold);
+    margin: 12px 0 10px;
+  }
+
+  .history-comment {
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(255,248,231,0.75);
+  }
+
+  /* クリア画像表示 */
+  .history-image {
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 12px;
+    display: block;
+    mix-blend-mode: normal;
+  }
+
+  /* モーダル */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: #1A0F00;
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modal-overlay.show .modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .modal-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+    animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  }
+
+  @keyframes bounceIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-title {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FFD580, #F5A623);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .modal-title.wrong {
+    background: linear-gradient(135deg, #ff8080, #ff4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .modal-comment {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,248,231,0.8);
+    margin-bottom: 20px;
+  }
+
+  .modal-image {
+    width: 100%;
+    max-width: 260px;
+    display: block;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+    animation: fadeIn 0.5s ease 0.3s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-close {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border: none;
+    border-radius: 14px;
+    padding: 14px 32px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+    width: 100%;
+  }
+
+  .modal-close:active { transform: scale(0.97); }
+
+  /* キラキラアニメ */
+  @keyframes sparkle {
+    0% { transform: scale(0) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1) rotate(180deg); opacity: 0; }
+  }
+
+  .sparkle {
+    position: absolute;
+    pointer-events: none;
+    animation: sparkle 0.8s ease-out forwards;
+    font-size: 20px;
+  }
+
+  /* クリア画面の特別エフェクト */
+  .clear-modal-title {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .clear-message {
+    font-size: 13px;
+    color: rgba(255,248,231,0.7);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  /* completed banner */
+  .completed-card {
+    background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(196,125,14,0.1));
+    border: 1px solid rgba(245,166,35,0.4);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .completed-text {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 16px;
+    color: var(--gold-light);
+    margin-bottom: 4px;
+  }
+
+  .completed-sub {
+    font-size: 12px;
+    color: rgba(255,248,231,0.5);
+  }
+</style>
+</head>
+<body>
+
+<!-- 星 -->
+<div class="stars" id="stars"></div>
+
+<div class="wrapper">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="header-title">✦ ANNIVERSARY QUEST ✦</div>
+    <div class="header-main">黄金のマンゴーを探せ！</div>
+  </div>
+
+  <!-- プログレス -->
+  <div class="progress-card">
+    <div class="progress-label">CURRENT MISSION</div>
+    <div class="progress-mission" id="mission-text">🔍 Mission 1 を解こう！</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-nums">
+      <span id="progress-count">0 / 4 クリア</span>
+      <span id="progress-pct">0%</span>
+    </div>
+  </div>
+
+  <!-- みらいちずカード（4問クリア後に表示） -->
+  <div class="map-card" id="map-card" style="display:none">
+    <div class="map-card-label">✦ アイテムを入手した！</div>
+    <img class="map-card-img" src="miraitizu.png" alt="みらいちず">
+    <button class="map-btn" onclick="useMapBtn()">🗺️ みらいちずを使う！</button>
+  </div>
+
+  <!-- 全クリ表示 -->
+  <div class="completed-card" id="completed-card" style="display:none">
+    <div style="font-size:36px;margin-bottom:8px;">🥭✨</div>
+    <div class="completed-text">黄金のマンゴーをゲット！！</div>
+    <div class="completed-sub">謎解きコンプリート！おめでとう🎉</div>
+  </div>
+
+  <!-- 解答エリア -->
+  <div class="answer-card" id="answer-card">
+    <div class="answer-label">🗝️ 答えを入力してね</div>
+    <div class="answer-input-wrap">
+      <input
+        class="answer-input"
+        id="answer-input"
+        type="text"
+        placeholder="ひらがなで入力..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+      <button class="answer-btn" onclick="submitAnswer()">送る</button>
+    </div>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="history-section" id="history-section">
+    <div class="history-label">— クリア済みミッション —</div>
+    <div id="history-list"></div>
+  </div>
+
+</div>
+
+<!-- モーダル -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-box">
+    <span class="modal-icon" id="modal-icon"></span>
+    <div class="modal-title" id="modal-title"></div>
+    <img class="modal-image" id="modal-image" src="" alt="" style="display:none">
+    <div class="modal-comment" id="modal-comment"></div>
+    <button class="modal-close" id="modal-close" onclick="closeModal()">とじる</button>
+  </div>
+</div>
+
+<script>
+  // ===== 問題データ =====
+  const QUIZZES = [
+    {
+      id: 1,
+      name: 'Mission 1',
+      answer: 'うみかぜ',
+      comment: 'うみかぜを感じながら黄金のマンゴー探しの旅へ！',
+      image: null,
+    },
+    {
+      id: 2,
+      name: 'Mission 2',
+      answer: 'きせき',
+      comment: 'たーくんが仲間になったぞ！人が出会う確率はなんと約0.0004%！まさにあーちゃんと出会えたことがキセキ！！',
+      image: null,
+    },
+    {
+      id: 3,
+      name: 'Mission 3',
+      answer: 'はなび',
+      comment: '思い出といえばやっぱり花火だよね．．．ってまずい！花火に見とれて黄金のマンゴーを探すの忘れてた！！',
+      image: null,
+    },
+    {
+      id: 4,
+      name: 'Mission 4',
+      answer: 'みらいちず',
+      comment: 'みらいちずをゲット！これで黄金のマンゴーのありかがわかるはず！！',
+      image: 'miraitizu.png',
+    },
+  ];
+
+  // ===== 状態（localStorage） =====
+  function getState() {
+    try {
+      const s = localStorage.getItem('mango_quest_state');
+      return s ? JSON.parse(s) : { cleared: [] };
+    } catch { return { cleared: [] }; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem('mango_quest_state', JSON.stringify(state));
+  }
+
+  let state = getState();
+  let modalCallback = null;
+
+  // ===== 星を生成 =====
+  function makeStars() {
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2 + 1;
+      s.style.cssText = `
+        width: ${size}px; height: ${size}px;
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        --d: ${2 + Math.random() * 4}s;
+        --delay: ${-Math.random() * 5}s;
+        --o: ${0.3 + Math.random() * 0.7};
+      `;
+      container.appendChild(s);
+    }
+  }
+
+  // ===== UI更新 =====
+  function updateUI() {
+    const cleared = state.cleared.length;
+    const total = QUIZZES.length;
+    const pct = Math.round((cleared / total) * 100);
+
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-count').textContent = `${cleared} / ${total} クリア`;
+    document.getElementById('progress-pct').textContent = pct + '%';
+
+    // ミッションテキスト
+    const nextIdx = cleared;
+    if (nextIdx < total) {
+      document.getElementById('mission-text').textContent = `🔍 Mission ${nextIdx + 1} を解こう！`;
+      document.getElementById('answer-card').style.display = 'block';
+      document.getElementById('completed-card').style.display = 'none';
+    } else {
+      document.getElementById('mission-text').textContent = `🏆 全ミッションクリア！！`;
+      document.getElementById('answer-card').style.display = 'none';
+      document.getElementById('completed-card').style.display = 'block';
+    }
+
+    // みらいちずカード
+    const mapCleared = state.cleared.includes(4);
+    const mapUsed = state.mapUsed;
+    document.getElementById('map-card').style.display = (mapCleared && !mapUsed) ? 'block' : 'none';
+
+    // 履歴
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    const section = document.getElementById('history-section');
+
+    // みらいちず使用済みなら「黄金のマンゴー」も履歴に追加
+    const items = [...state.cleared];
+    const showMangoHistory = state.mapUsed;
+
+    if (items.length === 0 && !showMangoHistory) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    list.innerHTML = '';
+
+    items.forEach(qId => {
+      const q = QUIZZES.find(x => x.id === qId);
+      if (!q) return;
+
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => reopenModal(q));
+
+      item.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-item-left">
+            <div class="history-badge">${qId}</div>
+            <div class="history-mission-name">${q.name}</div>
+          </div>
+          <span style="font-size:13px;color:rgba(255,248,231,0.4);">タップで見る ›</span>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+
+    // みらいちず使用済み → マンゴーの履歴カードも追加
+    if (showMangoHistory) {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => {
+        showModal({
+          icon: '🥭',
+          title: '黄金のマンゴー発見！！',
+          titleClass: '',
+          comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+          image: 'ougonnomango.png',
+          onClose: null
+        });
+      });
+      item.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-item-left">
+            <div class="history-badge" style="background:linear-gradient(135deg,#C47D0E,#FFD580);">🥭</div>
+            <div class="history-mission-name">黄金のマンゴー</div>
+          </div>
+          <span style="font-size:13px;color:rgba(255,248,231,0.4);">タップで見る ›</span>
+        </div>
+      `;
+      list.appendChild(item);
+    }
+  }
+
+  function reopenModal(q) {
+    showModal({
+      icon: '🎉',
+      title: '正解！！',
+      titleClass: '',
+      comment: q.comment,
+      image: q.image,
+      onClose: null
+    });
+  }
+
+  // ===== 解答送信 =====
+  function submitAnswer() {
+    const input = document.getElementById('answer-input');
+    const raw = input.value.trim();
+    if (!raw) return;
+
+    // 正規化（ひらがな変換）
+    const normalized = raw
+      .toLowerCase()
+      .replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+      .replace(/\s/g, '');
+
+    const nextIdx = state.cleared.length;
+    if (nextIdx >= QUIZZES.length) return;
+
+    const q = QUIZZES[nextIdx];
+    const correctNorm = q.answer.replace(/\s/g, '');
+
+    if (normalized === correctNorm) {
+      // 正解！
+      input.value = '';
+      state.cleared.push(q.id);
+      saveState(state);
+
+      showModal({
+        icon: '🎉',
+        title: '正解！！',
+        titleClass: '',
+        comment: q.comment,
+        image: q.image,   // Mission4はみらいちず画像がここに入る
+        onClose: () => { updateUI(); }
+      });
+    } else {
+      // 不正解
+      showModal({
+        icon: '😢',
+        title: 'ちがうよ…',
+        titleClass: 'wrong',
+        comment: 'もう一度よく考えてみよう！',
+        image: null,
+        onClose: null
+      });
+    }
+  }
+
+  // ===== みらいちず使う =====
+  function useMapBtn() {
+    state.mapUsed = true;
+    saveState(state);
+    updateUI();
+
+    showModal({
+      icon: '🥭',
+      title: '黄金のマンゴー発見！！',
+      titleClass: '',
+      comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+      image: 'ougonnomango.png',
+      onClose: () => { updateUI(); }
+    });
+  }
+
+  // ===== モーダル =====
+  function showModal({ icon, title, titleClass, comment, image, onClose }) {
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-title').className = 'modal-title ' + (titleClass || '');
+    document.getElementById('modal-comment').textContent = comment;
+
+    const img = document.getElementById('modal-image');
+    if (image) {
+      img.src = image;
+      img.style.display = 'block';
+      img.style.mixBlendMode = 'multiply';
+    } else {
+      img.style.display = 'none';
+    }
+
+    modalCallback = onClose;
+    document.getElementById('modal').classList.add('show');
+
+    // 正解のとき星くずエフェクト
+    if (titleClass !== 'wrong') {
+      spawnSparkles();
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    const cb = modalCallback;
+    modalCallback = null;
+    if (cb) cb();
+  }
+
+  function spawnSparkles() {
+    const modal = document.getElementById('modal-box');
+    ['✦','★','✨','🌟','💛'].forEach((s, i) => {
+      setTimeout(() => {
+        const el = document.createElement('span');
+        el.className = 'sparkle';
+        el.textContent = s;
+        el.style.left = (10 + Math.random() * 80) + '%';
+        el.style.top = (10 + Math.random() * 60) + '%';
+        modal.appendChild(el);
+        setTimeout(() => el.remove(), 900);
+      }, i * 120);
+    });
+  }
+
+  // ===== Enterキー対応 =====
+  document.getElementById('answer-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAnswer();
+  });
+
+  // ===== 初期化 =====
+  makeStars();
+  updateUI();
+</script>
+</body>
+</html>
