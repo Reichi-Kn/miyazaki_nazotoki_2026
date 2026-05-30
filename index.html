@@ -209,7 +209,6 @@
     border-radius: 12px;
     display: block;
     margin: 0 auto 12px;
-    mix-blend-mode: multiply;
   }
 
   .map-btn {
@@ -483,7 +482,6 @@
     margin: 0 auto 16px;
     border-radius: 12px;
     animation: fadeIn 0.5s ease 0.3s both;
-    mix-blend-mode: multiply;
   }
 
   .modal-image.map-img { max-width: 180px; }
@@ -569,7 +567,7 @@
 
   <!-- 全クリ表示 -->
   <div class="completed-card" id="completed-card" style="display:none">
-    <img src="ougonnomango.png" alt="黄金のマンゴー" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 8px;mix-blend-mode:multiply;">
+    <img src="ougonnomango.png" alt="黄金のマンゴー" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 8px;">
     <div class="completed-text">黄金のマンゴーをゲット！！</div>
     <div class="completed-sub">謎解きコンプリート！おめでとう🎉</div>
   </div>
@@ -850,3 +848,71 @@
 </script>
 </body>
 </html>
+<script>
+// 黒背景を透明化してcanvasのdata URLを返す
+function removeBlackBg(imgEl, threshold) {
+  threshold = threshold || 60;
+  return new Promise(function(resolve) {
+    const canvas = document.createElement('canvas');
+    const img2 = new Image();
+    img2.crossOrigin = 'anonymous';
+    img2.onload = function() {
+      canvas.width = img2.naturalWidth;
+      canvas.height = img2.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img2, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = data.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2];
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        if (brightness < threshold) {
+          const alpha = Math.round((brightness / threshold) * (brightness / threshold) * 255);
+          d[i+3] = alpha;
+        }
+      }
+      ctx.putImageData(data, 0, 0);
+      resolve(canvas.toDataURL());
+    };
+    img2.onerror = function() { resolve(imgEl.src); };
+    img2.src = imgEl.src + (imgEl.src.startsWith('data:') ? '' : '?t=' + Date.now());
+  });
+}
+
+async function processStaticImages() {
+  const mapImg = document.querySelector('.map-card-img');
+  if (mapImg && !mapImg.dataset.processed) {
+    mapImg.dataset.processed = '1';
+    const url = await removeBlackBg(mapImg, 55);
+    mapImg.src = url;
+  }
+  const completedImg = document.querySelector('.completed-card img');
+  if (completedImg && !completedImg.dataset.processed) {
+    completedImg.dataset.processed = '1';
+    const url = await removeBlackBg(completedImg, 30);
+    completedImg.src = url;
+  }
+}
+
+async function processModalImage() {
+  const img = document.getElementById('modal-image');
+  if (!img || img.style.display === 'none' || !img.src || img.src.startsWith('data:')) return;
+  const threshold = img.src.includes('miraitizu') ? 55 : 30;
+  const url = await removeBlackBg(img, threshold);
+  img.src = url;
+}
+
+// モーダルが開いたとき画像を処理
+new MutationObserver(function(mutations) {
+  mutations.forEach(function(m) {
+    if (m.target.classList.contains('show')) {
+      setTimeout(processModalImage, 60);
+    }
+  });
+}).observe(document.getElementById('modal'), { attributes: true, attributeFilter: ['class'] });
+
+// 少し遅らせて静的画像を処理（画像読み込み完了待ち）
+window.addEventListener('load', function() {
+  setTimeout(processStaticImages, 100);
+});
+</script>
