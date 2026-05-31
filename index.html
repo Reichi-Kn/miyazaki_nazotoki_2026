@@ -835,13 +835,26 @@
 
   function getState() {
     try {
-      const s = localStorage.getItem(getStateKey());
-      return s ? JSON.parse(s) : { cleared: [] };
+      const key = getStateKey();
+      const s = localStorage.getItem(key);
+      const parsed = s ? JSON.parse(s) : null;
+      // フォールバック：もう一方のキーも確認し、進捗が多い方を使う
+      const otherKey = key === STATE_KEY ? STATE_KEY_DEV : STATE_KEY;
+      const sOther = localStorage.getItem(otherKey);
+      const parsedOther = sOther ? JSON.parse(sOther) : null;
+      if (!parsed && !parsedOther) return { cleared: [] };
+      if (!parsed) return parsedOther;
+      if (!parsedOther) return parsed;
+      // 両方ある場合はクリア数が多い方を優先
+      return (parsedOther.cleared.length > parsed.cleared.length) ? parsedOther : parsed;
     } catch { return { cleared: [] }; }
   }
 
   function saveState(state) {
-    localStorage.setItem(getStateKey(), JSON.stringify(state));
+    // 本番・開発両キーに書くことでSafariリロード後も進捗が消えない
+    const json = JSON.stringify(state);
+    try { localStorage.setItem(STATE_KEY, json); } catch(e) {}
+    try { localStorage.setItem(STATE_KEY_DEV, json); } catch(e) {}
   }
 
   let state = getState();
@@ -1035,10 +1048,8 @@
   }
 
   function useMapBtn() {
-    state.mapUsed = true;
-    saveState(state);
     updateUI();
-    showModal(MANGO_MODAL_DATA);
+    playMapAnimation();
   }
 
   let _mapAnimPhase = 'idle';
@@ -1119,11 +1130,9 @@
   document.getElementById('map-anim-overlay').addEventListener('click', function() {
     if (_mapAnimPhase !== 'mango') return;
     closeMapAnim(function() {
-      if (!state.mapUsed) {
-        state.mapUsed = true;
-        saveState(state);
-        updateUI();
-      }
+      state.mapUsed = true;
+      saveState(state);
+      updateUI();
       showModal(MANGO_MODAL_DATA);
     });
   });
