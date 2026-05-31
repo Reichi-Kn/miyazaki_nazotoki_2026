@@ -699,6 +699,61 @@
 
 </div>
 
+<!-- 地図→マンゴー演出オーバーレイ -->
+<div id="map-anim-overlay" style="
+  display:none;position:fixed;inset:0;z-index:200;
+  background:#0a0800;
+  align-items:center;justify-content:center;flex-direction:column;
+  cursor:pointer;
+">
+  <div id="map-anim-inner" style="position:relative;display:flex;align-items:center;justify-content:center;">
+    <img id="map-anim-img" src="miraitizu.png" style="width:260px;max-width:80vw;border-radius:16px;transition:all 0.6s ease;">
+    <div id="map-anim-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+  </div>
+
+  <div id="map-anim-wait" style="display:none;position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+  <!-- 画面1: マンゴー発見（タップ待ち） -->
+  <div id="map-anim-mango" style="display:none;flex-direction:column;align-items:center;width:100%;">
+    <div style="position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
+      <div class="mango-glow-ring" style="inset:-20px;"></div>
+      <img id="map-anim-mango-img" src="ougonnomango.png" class="mango-glow-img" style="width:160px;height:160px;">
+      <div id="map-anim-mango-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+    <div id="map-anim-title" style="
+      font-family:'Kaisei Decol',serif;font-size:24px;font-weight:700;
+      background:linear-gradient(135deg,#C47D0E,#FFD580);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      margin-top:16px;opacity:0;transition:opacity 0.8s ease;text-align:center;
+    ">黄金のマンゴー発見！！</div>
+    <div id="map-anim-tap-hint" style="
+      font-size:12px;color:rgba(255,248,231,0.4);margin-top:40px;
+      opacity:0;transition:opacity 0.8s ease;letter-spacing:0.2em;
+      animation:tapHintPulse 2s ease-in-out infinite;
+    ">タップして続ける</div>
+  </div>
+
+  <!-- 画面2: メッセージ -->
+  <div id="map-anim-msg-screen" style="display:none;flex-direction:column;align-items:center;width:100%;padding:0 32px;">
+    <div style="font-size:48px;margin-bottom:16px;">🥭</div>
+    <div id="map-anim-msg" style="
+      font-size:16px;line-height:2;color:rgba(255,248,231,0.9);
+      text-align:center;white-space:pre-line;
+      opacity:0;transition:opacity 1s ease;
+    ">3周年おめでとう！！
+素敵な旅になったね🧡
+これからもずっと一緒にいようね✨</div>
+    <button id="map-anim-close" style="
+      margin-top:32px;
+      background:linear-gradient(135deg,#8B5500,#E8A020);
+      border:none;border-radius:14px;padding:14px 40px;
+      font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;
+      color:#fff;cursor:pointer;
+      opacity:0;transition:opacity 0.8s ease;
+    ">とじる</button>
+  </div>
+</div>
+
 <!-- モーダル -->
 <div class="modal-overlay" id="modal">
   <div class="modal" id="modal-box">
@@ -717,6 +772,16 @@
     { id: 3, name: 'Mission 3', answer: 'はなび', comment: '思い出といえばやっぱり花火だよね．．．ってまずい！\n花火に見とれて黄金のマンゴーを探すの忘れてた！', image: null },
     { id: 4, name: 'Mission 4', answer: 'みらいちず', comment: 'みらいちずをゲット！\nこれで黄金のマンゴーのありかがわかるはず！', image: 'miraitizu.png' },
   ];
+
+  // マンゴー発見時に通常モーダルで表示するデータ
+  const MANGO_MODAL_DATA = {
+    icon: '🥭',
+    title: '黄金のマンゴー発見！！',
+    titleClass: '',
+    comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+    image: 'ougonnomango.png',
+    onClose: null
+  };
 
   function getState() {
     try {
@@ -831,16 +896,8 @@
       const item = document.createElement('div');
       item.className = 'history-item';
       item.style.cursor = 'pointer';
-      item.addEventListener('click', () => {
-        showModal({
-          icon: '🥭',
-          title: '黄金のマンゴー発見！！',
-          titleClass: '',
-          comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
-          image: 'ougonnomango.png',
-          onClose: null
-        });
-      });
+      // クリア済みタップ時と同じ showModal を使う
+      item.addEventListener('click', () => showModal(MANGO_MODAL_DATA));
       item.innerHTML = `
         <div class="history-item-header">
           <div class="history-item-left">
@@ -896,19 +953,217 @@
     }
   }
 
-  // ★ここが変更点：黒背景アニメなし、通常モーダルで表示
   function useMapBtn() {
     state.mapUsed = true;
     saveState(state);
     updateUI();
-    showModal({
-      icon: '🥭',
-      title: '黄金のマンゴー発見！！',
-      titleClass: '',
-      comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
-      image: 'ougonnomango.png',
-      onClose: null
+    playMapAnimation();
+  }
+
+  let _mapAnimPhase = 'idle';
+
+  function playMapAnimation() {
+    _mapAnimPhase = 'map';
+    const overlay   = document.getElementById('map-anim-overlay');
+    const mapImg    = document.getElementById('map-anim-img');
+    const mangoEl   = document.getElementById('map-anim-mango');
+    const msgScreen = document.getElementById('map-anim-msg-screen');
+    const title     = document.getElementById('map-anim-title');
+    const tapHint   = document.getElementById('map-anim-tap-hint');
+    const msg       = document.getElementById('map-anim-msg');
+    const closeBtn  = document.getElementById('map-anim-close');
+    const waitEl    = document.getElementById('map-anim-wait');
+
+    overlay.style.display = 'flex';
+    overlay.style.cursor = 'default';
+    mapImg.style.cssText = 'width:260px;max-width:80vw;border-radius:16px;opacity:0;transform:scale(0.7);transition:all 0.6s ease;';
+    mangoEl.style.display = 'none';
+    msgScreen.style.display = 'none';
+    waitEl.style.display = 'none';
+    waitEl.innerHTML = '';
+    title.style.opacity = '0';
+    tapHint.style.opacity = '0';
+    msg.style.opacity = '0';
+    closeBtn.style.opacity = '0';
+
+    // ① 地図登場
+    setTimeout(() => {
+      mapImg.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
+      mapImg.style.opacity = '1';
+      mapImg.style.transform = 'scale(1)';
+    }, 200);
+
+    setTimeout(() => spawnMapAnimParticles(), 900);
+
+    setTimeout(() => {
+      mapImg.style.transition = 'opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease';
+      mapImg.style.opacity = '0';
+      mapImg.style.transform = 'scale(1.2)';
+      mapImg.style.filter = 'brightness(4) blur(6px)';
+    }, 2400);
+
+    setTimeout(() => {
+      mapImg.style.display = 'none';
+      waitEl.style.display = 'block';
+      _mapAnimPhase = 'wait';
+      startWaitEffect(waitEl);
+    }, 3100);
+
+    // ② マンゴー登場
+    setTimeout(() => {
+      waitEl.style.display = 'none';
+      waitEl.innerHTML = '';
+      mangoEl.style.display = 'flex';
+      _mapAnimPhase = 'mango';
+      overlay.style.cursor = 'pointer';
+
+      const mangoImg = document.getElementById('map-anim-mango-img');
+      mangoImg.style.opacity = '0';
+      mangoImg.style.transform = 'scale(0.3)';
+      mangoImg.style.transition = 'opacity 0.8s ease, transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+      setTimeout(() => {
+        mangoImg.style.opacity = '1';
+        mangoImg.style.transform = 'scale(1)';
+      }, 50);
+      spawnMapMangoParticles();
+
+      setTimeout(() => { title.style.opacity = '1'; }, 900);
+      setTimeout(() => { tapHint.style.opacity = '1'; }, 1600);
+    }, 6200);
+  }
+
+  // タップで画面2（メッセージ）へ
+  document.getElementById('map-anim-overlay').addEventListener('click', function() {
+    if (_mapAnimPhase !== 'mango') return;
+    _mapAnimPhase = 'message';
+    this.style.cursor = 'default';
+
+    const mangoEl   = document.getElementById('map-anim-mango');
+    const msgScreen = document.getElementById('map-anim-msg-screen');
+    const msg       = document.getElementById('map-anim-msg');
+    const closeBtn  = document.getElementById('map-anim-close');
+
+    mangoEl.style.transition = 'opacity 0.4s ease';
+    mangoEl.style.opacity = '0';
+    setTimeout(() => {
+      mangoEl.style.display = 'none';
+      msgScreen.style.display = 'flex';
+      setTimeout(() => { msg.style.opacity = '1'; }, 100);
+      setTimeout(() => { closeBtn.style.opacity = '1'; }, 700);
+    }, 400);
+  });
+
+  // 「とじる」ボタン → オーバーレイを閉じてからモーダルを表示
+  document.getElementById('map-anim-close').addEventListener('click', function(e) {
+    e.stopPropagation(); // オーバーレイのclickに伝播させない
+    closeMapAnim(function() {
+      // アニメーション完了後、クリア済みタップ時と同じモーダルを表示
+      showModal(MANGO_MODAL_DATA);
     });
+  });
+
+  function startWaitEffect(container) {
+    const STARS = ['✦','★','✶','·','⋆','✸'];
+    let count = 0;
+    const iv = setInterval(() => {
+      if (!container.parentNode || container.style.display === 'none') {
+        clearInterval(iv); return;
+      }
+      if (count++ > 60) { clearInterval(iv); return; }
+      const el = document.createElement('span');
+      el.textContent = STARS[Math.floor(Math.random() * STARS.length)];
+      const x = 10 + Math.random() * 80;
+      const size = 10 + Math.random() * 18;
+      el.style.cssText = `
+        position:absolute;
+        left:${x}%;top:-10px;
+        font-size:${size}px;
+        color:${['rgba(255,215,0,0.8)','rgba(255,255,255,0.7)','rgba(255,200,50,0.6)'][Math.floor(Math.random()*3)]};
+        pointer-events:none;
+        transition: transform ${1.5+Math.random()*1.5}s linear, opacity ${0.5}s ease;
+        opacity:1;
+      `;
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transform = `translateY(${window.innerHeight + 20}px) rotate(${Math.random()*360}deg)`;
+        });
+      });
+      setTimeout(() => el.remove(), 3500);
+    }, 80);
+  }
+
+  // コールバック対応版 closeMapAnim
+  function closeMapAnim(callback) {
+    _mapAnimPhase = 'idle';
+    const overlay = document.getElementById('map-anim-overlay');
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '';
+      overlay.style.transition = '';
+      const mapImg = document.getElementById('map-anim-img');
+      mapImg.style.display = '';
+      mapImg.style.filter = '';
+      mapImg.style.opacity = '0';
+      mapImg.style.transform = '';
+      if (typeof callback === 'function') callback();
+    }, 400);
+  }
+
+  function spawnMapAnimParticles() {
+    const container = document.getElementById('map-anim-particles');
+    container.innerHTML = '';
+    const STARS = ['✦','★','✶','✸','⋆','✺'];
+    for (let i = 0; i < 16; i++) {
+      const el = document.createElement('span');
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 80 + Math.random() * 60;
+      const tx = Math.round(Math.cos(angle) * r);
+      const ty = Math.round(Math.sin(angle) * r);
+      const dur = (0.8 + Math.random() * 0.6).toFixed(2);
+      el.textContent = STARS[i % STARS.length];
+      el.style.cssText = `
+        position:absolute;left:50%;top:50%;
+        font-size:${12 + Math.random()*14}px;
+        color:${['#fff','#FFD700','#FFE87C'][i%3]};
+        pointer-events:none;
+        opacity:0;
+        transition:all ${dur}s ease-out;
+        transform:translate(-50%,-50%);
+      `;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random()*360}deg)`;
+      }, 50 + i * 40);
+      setTimeout(() => { el.style.opacity = '0'; }, 1200);
+    }
+  }
+
+  function spawnMapMangoParticles() {
+    const container = document.getElementById('map-anim-mango-particles');
+    container.innerHTML = '';
+    const STARS = ['✦','★','✶','✸','⋆','✺','·'];
+    for (let i = 0; i < 20; i++) {
+      const el = document.createElement('span');
+      el.className = 'mango-star';
+      const angle = (i / 20) * Math.PI * 2;
+      const r = 60 + Math.random() * 30;
+      el.textContent = STARS[i % STARS.length];
+      el.style.cssText = `
+        left:90px;top:90px;
+        --tx:${Math.round(Math.cos(angle)*r)}px;
+        --ty:${Math.round(Math.sin(angle)*r)}px;
+        --dur:${(1.8+Math.random()*1.4).toFixed(2)}s;
+        --delay:-${(Math.random()*2).toFixed(2)}s;
+        --size:${(10+Math.random()*12).toFixed(0)}px;
+        --rot:${Math.round(120+Math.random()*240)}deg;
+        color:${['#fff','#FFD700','#FFE87C'][i%3]};
+      `;
+      container.appendChild(el);
+    }
   }
 
   function showModal({ icon, title, titleClass, comment, image, onClose }) {
