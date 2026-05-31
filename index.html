@@ -717,6 +717,46 @@
 
 </div>
 
+<!-- 地図→マンゴー演出オーバーレイ -->
+<div id="map-anim-overlay" style="
+  display:none;position:fixed;inset:0;z-index:200;
+  background:#0a0800;
+  align-items:center;justify-content:center;flex-direction:column;
+">
+  <div id="map-anim-inner" style="position:relative;display:flex;align-items:center;justify-content:center;">
+    <img id="map-anim-img" src="miraitizu.png" style="width:260px;max-width:80vw;border-radius:16px;transition:all 0.6s ease;">
+    <div id="map-anim-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+  </div>
+  <div id="map-anim-mango" style="display:none;flex-direction:column;align-items:center;">
+    <div style="position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center;">
+      <div class="mango-glow-ring"></div>
+      <img id="map-anim-mango-img" src="ougonnomango.png" class="mango-glow-img" style="width:140px;height:140px;">
+      <div id="map-anim-mango-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+    <div id="map-anim-title" style="
+      font-family:'Kaisei Decol',serif;font-size:22px;font-weight:700;
+      background:linear-gradient(135deg,#C47D0E,#FFD580);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      margin-top:12px;opacity:0;transition:opacity 0.8s ease;text-align:center;
+    ">黄金のマンゴー発見！！</div>
+    <div id="map-anim-msg" style="
+      font-size:14px;line-height:1.8;color:rgba(255,248,231,0.85);
+      margin-top:8px;text-align:center;white-space:pre-line;
+      opacity:0;transition:opacity 0.8s ease;padding:0 24px;
+    ">3周年おめでとう！！
+素敵な旅になったね🧡
+これからもずっと一緒にいようね✨</div>
+    <button id="map-anim-close" onclick="closeMapAnim()" style="
+      margin-top:24px;
+      background:linear-gradient(135deg,#8B5500,#E8A020);
+      border:none;border-radius:14px;padding:14px 40px;
+      font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;
+      color:#fff;cursor:pointer;
+      opacity:0;transition:opacity 0.8s ease;
+    ">とじる</button>
+  </div>
+</div>
+
 <!-- モーダル -->
 <div class="modal-overlay" id="modal">
   <div class="modal" id="modal-box">
@@ -924,14 +964,134 @@
     state.mapUsed = true;
     saveState(state);
     updateUI();
-    showModal({
-      icon: '🥭',
-      title: '黄金のマンゴー発見！！',
-      titleClass: '',
-      comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
-      image: 'ougonnomango.png',
-      onClose: () => { updateUI(); }
-    });
+    playMapAnimation();
+  }
+
+  function playMapAnimation() {
+    const overlay = document.getElementById('map-anim-overlay');
+    const mapImg  = document.getElementById('map-anim-img');
+    const mangoEl = document.getElementById('map-anim-mango');
+    const title   = document.getElementById('map-anim-title');
+    const msg     = document.getElementById('map-anim-msg');
+    const closeBtn= document.getElementById('map-anim-close');
+
+    // リセット
+    overlay.style.display = 'flex';
+    mapImg.style.opacity = '0';
+    mapImg.style.transform = 'scale(0.7)';
+    mangoEl.style.display = 'none';
+    title.style.opacity = '0';
+    msg.style.opacity = '0';
+    closeBtn.style.opacity = '0';
+
+    // ① 地図が登場
+    setTimeout(() => {
+      mapImg.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
+      mapImg.style.opacity = '1';
+      mapImg.style.transform = 'scale(1)';
+    }, 100);
+
+    // ① 地図にキラキラ
+    setTimeout(() => spawnMapAnimParticles(), 800);
+
+    // ① 地図がエフェクトとともに消える
+    setTimeout(() => {
+      mapImg.style.transition = 'opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease';
+      mapImg.style.opacity = '0';
+      mapImg.style.transform = 'scale(1.15)';
+      mapImg.style.filter = 'brightness(3) blur(4px)';
+    }, 2200);
+
+    // ② マンゴー登場
+    setTimeout(() => {
+      mapImg.style.display = 'none';
+      mangoEl.style.display = 'flex';
+      const mangoImg = document.getElementById('map-anim-mango-img');
+      mangoImg.style.opacity = '0';
+      mangoImg.style.transform = 'scale(0.5)';
+      mangoImg.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
+      setTimeout(() => {
+        mangoImg.style.opacity = '1';
+        mangoImg.style.transform = 'scale(1)';
+      }, 50);
+      spawnMapMangoParticles();
+    }, 2800);
+
+    // ③ タイトル・メッセージ・ボタン
+    setTimeout(() => { title.style.opacity = '1'; }, 3600);
+    setTimeout(() => { msg.style.opacity = '1'; }, 4100);
+    setTimeout(() => { closeBtn.style.opacity = '1'; }, 4500);
+  }
+
+  function closeMapAnim() {
+    const overlay = document.getElementById('map-anim-overlay');
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '';
+      overlay.style.transition = '';
+      // 地図画像をリセット
+      const mapImg = document.getElementById('map-anim-img');
+      mapImg.style.display = '';
+      mapImg.style.filter = '';
+      mapImg.style.opacity = '0';
+      mapImg.style.transform = '';
+    }, 400);
+  }
+
+  function spawnMapAnimParticles() {
+    const container = document.getElementById('map-anim-particles');
+    container.innerHTML = '';
+    const STARS = ['✦','★','✶','✸','⋆','✺'];
+    for (let i = 0; i < 16; i++) {
+      const el = document.createElement('span');
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 80 + Math.random() * 60;
+      const tx = Math.round(Math.cos(angle) * r);
+      const ty = Math.round(Math.sin(angle) * r);
+      const dur = (0.8 + Math.random() * 0.6).toFixed(2);
+      el.textContent = STARS[i % STARS.length];
+      el.style.cssText = `
+        position:absolute;left:50%;top:50%;
+        font-size:${12 + Math.random()*14}px;
+        color:${['#fff','#FFD700','#FFE87C'][i%3]};
+        pointer-events:none;
+        opacity:0;
+        transition:all ${dur}s ease-out;
+        transform:translate(-50%,-50%);
+      `;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random()*360}deg)`;
+      }, 50 + i * 40);
+      setTimeout(() => { el.style.opacity = '0'; }, 1200);
+    }
+  }
+
+  function spawnMapMangoParticles() {
+    const container = document.getElementById('map-anim-mango-particles');
+    container.innerHTML = '';
+    const STARS = ['✦','★','✶','✸','⋆','✺','·'];
+    for (let i = 0; i < 20; i++) {
+      const el = document.createElement('span');
+      el.className = 'mango-star';
+      const angle = (i / 20) * Math.PI * 2;
+      const r = 60 + Math.random() * 30;
+      el.textContent = STARS[i % STARS.length];
+      el.style.cssText = `
+        left:90px;top:90px;
+        --tx:${Math.round(Math.cos(angle)*r)}px;
+        --ty:${Math.round(Math.sin(angle)*r)}px;
+        --dur:${(1.8+Math.random()*1.4).toFixed(2)}s;
+        --delay:-${(Math.random()*2).toFixed(2)}s;
+        --size:${(10+Math.random()*12).toFixed(0)}px;
+        --rot:${Math.round(120+Math.random()*240)}deg;
+        color:${['#fff','#FFD700','#FFE87C'][i%3]};
+      `;
+      container.appendChild(el);
+    }
   }
 
   function showModal({ icon, title, titleClass, comment, image, onClose }) {
@@ -968,8 +1128,8 @@
 
   function showQRModal() {
     // 通常モーダルを流用してQR表示
-    document.getElementById('modal-icon').textContent = '🎬';
-    document.getElementById('modal-icon').className = 'modal-icon correct';
+    document.getElementById('modal-icon').innerHTML = '';
+    document.getElementById('modal-icon').className = 'modal-icon';
     document.getElementById('modal-title').textContent = '';
     document.getElementById('modal-title').className = 'modal-title';
     document.getElementById('modal-comment').textContent = 'QRコードをスキャンしてね🥭';
@@ -1080,6 +1240,8 @@ async function processStaticImages() {
 async function processModalImage() {
   const img = document.getElementById('modal-image');
   if (!img || img.style.display === 'none' || !img.src || img.src.startsWith('data:')) return;
+  // QRコードは黒背景除去しない
+  if (img.src.includes('Anniv_song_rink')) return;
   const threshold = img.src.includes('miraitizu') ? 55 : 30;
   const url = await removeBlackBg(img, threshold);
   img.src = url;
