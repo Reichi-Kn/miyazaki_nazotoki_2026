@@ -893,10 +893,28 @@
     });
 
     if (showMangoHistory) {
+      // みらいちずを使うアイテム
+      const mapItem = document.createElement('div');
+      mapItem.className = 'history-item';
+      mapItem.style.cursor = 'pointer';
+      mapItem.addEventListener('click', () => {
+        playMapAnimation();
+      });
+      mapItem.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-item-left">
+            <div class="history-badge" style="background:linear-gradient(135deg,#228855,#2daa70);">🗺️</div>
+            <div class="history-mission-name">みらいちずを使う</div>
+          </div>
+          <span style="font-size:13px;color:rgba(122,90,32,0.5);">タップで見る ›</span>
+        </div>
+      `;
+      list.appendChild(mapItem);
+
+      // 黄金のマンゴーアイテム
       const item = document.createElement('div');
       item.className = 'history-item';
       item.style.cursor = 'pointer';
-      // クリア済みタップ時と同じ showModal を使う
       item.addEventListener('click', () => showModal(MANGO_MODAL_DATA));
       item.innerHTML = `
         <div class="history-item-header">
@@ -954,16 +972,21 @@
   }
 
   function useMapBtn() {
-    state.mapUsed = true;
-    saveState(state);
+    // mapUsedはアニメーション完了（モーダルを閉じた）後に保存する
+    // リロード時は地図を使う前の状態に戻る
     updateUI();
     playMapAnimation();
   }
 
   let _mapAnimPhase = 'idle';
+  let _waitEffectInterval = null; // waitエフェクトのintervalを外部管理
 
   function playMapAnimation() {
     _mapAnimPhase = 'map';
+
+    // 前回のwaitエフェクトが残っていればクリア
+    if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
+
     const overlay   = document.getElementById('map-anim-overlay');
     const mapImg    = document.getElementById('map-anim-img');
     const mangoEl   = document.getElementById('map-anim-mango');
@@ -1011,6 +1034,8 @@
 
     // ② マンゴー登場
     setTimeout(() => {
+      // waitエフェクト停止
+      if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
       waitEl.style.display = 'none';
       waitEl.innerHTML = '';
       mangoEl.style.display = 'flex';
@@ -1032,32 +1057,14 @@
     }, 6200);
   }
 
-  // タップで画面2（メッセージ）へ
+  // タップ → オーバーレイを閉じてmapUsedを保存してモーダルを表示
   document.getElementById('map-anim-overlay').addEventListener('click', function() {
     if (_mapAnimPhase !== 'mango') return;
-    _mapAnimPhase = 'message';
-    this.style.cursor = 'default';
-
-    const mangoEl   = document.getElementById('map-anim-mango');
-    const msgScreen = document.getElementById('map-anim-msg-screen');
-    const msg       = document.getElementById('map-anim-msg');
-    const closeBtn  = document.getElementById('map-anim-close');
-
-    mangoEl.style.transition = 'opacity 0.4s ease';
-    mangoEl.style.opacity = '0';
-    setTimeout(() => {
-      mangoEl.style.display = 'none';
-      msgScreen.style.display = 'flex';
-      setTimeout(() => { msg.style.opacity = '1'; }, 100);
-      setTimeout(() => { closeBtn.style.opacity = '1'; }, 700);
-    }, 400);
-  });
-
-  // 「とじる」ボタン → オーバーレイを閉じてからモーダルを表示
-  document.getElementById('map-anim-close').addEventListener('click', function(e) {
-    e.stopPropagation(); // オーバーレイのclickに伝播させない
     closeMapAnim(function() {
-      // アニメーション完了後、クリア済みタップ時と同じモーダルを表示
+      // アニメーションを最後まで見た時点でmapUsedを保存
+      state.mapUsed = true;
+      saveState(state);
+      updateUI();
       showModal(MANGO_MODAL_DATA);
     });
   });
@@ -1065,11 +1072,13 @@
   function startWaitEffect(container) {
     const STARS = ['✦','★','✶','·','⋆','✸'];
     let count = 0;
-    const iv = setInterval(() => {
+    // 既存のintervalをクリアしてから新規作成
+    if (_waitEffectInterval) { clearInterval(_waitEffectInterval); }
+    _waitEffectInterval = setInterval(() => {
       if (!container.parentNode || container.style.display === 'none') {
-        clearInterval(iv); return;
+        clearInterval(_waitEffectInterval); _waitEffectInterval = null; return;
       }
-      if (count++ > 60) { clearInterval(iv); return; }
+      if (count++ > 60) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; return; }
       const el = document.createElement('span');
       el.textContent = STARS[Math.floor(Math.random() * STARS.length)];
       const x = 10 + Math.random() * 80;
@@ -1096,6 +1105,8 @@
   // コールバック対応版 closeMapAnim
   function closeMapAnim(callback) {
     _mapAnimPhase = 'idle';
+    // waitエフェクトを止める
+    if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
     const overlay = document.getElementById('map-anim-overlay');
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.4s ease';
