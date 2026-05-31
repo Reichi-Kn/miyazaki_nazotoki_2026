@@ -702,11 +702,33 @@
     <div id="history-list"></div>
   </div>
 
-  <div class="dev-panel">
+  <div class="dev-panel" id="dev-panel" style="display:none;">
     <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'" style="background:none;border:none;font-size:11px;color:rgba(200,80,80,0.4);letter-spacing:0.15em;cursor:pointer;width:100%;">🛠️ 開発用</button>
     <div style="display:none;flex-direction:column;gap:8px;margin-top:10px;">
       <button onclick="devReset()" style="background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:10px;padding:10px 20px;color:rgba(180,60,60,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">Mission 3 までクリア状態にリセット</button>
       <button onclick="devResetAll()" style="background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:10px;padding:10px 20px;color:rgba(180,60,60,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">はじめにもどる</button>
+      <button onclick="goToPasswordScreen()" style="background:rgba(80,80,255,0.08);border:1px solid rgba(80,80,255,0.25);border-radius:10px;padding:10px 20px;color:rgba(60,60,180,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">🔐 パスワード画面にもどる</button>
+    </div>
+  </div>
+
+  <!-- 全クリア後リスタートボタン（本番用） -->
+  <div id="restart-section" style="display:none;margin-top:32px;text-align:center;">
+    <button onclick="showRestartConfirm()" style="background:linear-gradient(135deg,rgba(196,125,14,0.12),rgba(232,160,32,0.18));border:1.5px solid rgba(196,125,14,0.3);border-radius:16px;padding:14px 28px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;color:var(--gold-dark);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform 0.15s;">🔄 はじめから解く</button>
+  </div>
+
+  <!-- リスタート確認モーダル -->
+  <div id="restart-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(60,40,0,0.45);z-index:200;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);">
+    <div style="background:#FFFDF5;border:1.5px solid rgba(196,125,14,0.3);border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(139,85,0,0.18);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#E8A020,transparent);"></div>
+      <div style="font-size:36px;margin-bottom:12px;">🔄</div>
+      <div style="font-family:'Kaisei Decol',serif;font-size:18px;font-weight:700;color:var(--gold-dark);margin-bottom:8px;">はじめから解く</div>
+      <div style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:20px;">本当にリセットしますか？<br>パスワードを入力して確認してね</div>
+      <input id="restart-pw-input" type="password" placeholder="パスワードを入力..." autocomplete="off" style="width:100%;background:rgba(255,255,255,0.85);border:1.5px solid rgba(196,125,14,0.3);border-radius:14px;padding:13px 14px;font-family:'Zen Maru Gothic',sans-serif;font-size:15px;color:#3A2800;outline:none;-webkit-appearance:none;margin-bottom:10px;transition:border-color 0.2s,box-shadow 0.2s;" />
+      <div id="restart-pw-error" style="font-size:12px;color:#cc3333;margin-bottom:10px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeRestartConfirm()" style="flex:1;background:rgba(196,125,14,0.08);border:1.5px solid rgba(196,125,14,0.2);border-radius:12px;padding:13px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;color:var(--text-muted);cursor:pointer;">キャンセル</button>
+        <button onclick="confirmRestart()" style="flex:1;background:linear-gradient(135deg,#8B5500,#E8A020);border:none;border-radius:12px;padding:13px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(139,85,0,0.25);">リセット</button>
+      </div>
     </div>
   </div>
 
@@ -796,15 +818,30 @@
     onClose: null
   };
 
+  // ── モード管理（本番 / 開発） ──
+  const PASSWORDS = {
+    'ayaka1017': 'prod',
+    'test': 'dev',
+  };
+  const AUTH_KEY     = 'mango_quest_auth';      // 保存形式: "prod" or "dev"
+  const STATE_KEY    = 'mango_quest_state';      // 本番進捗
+  const STATE_KEY_DEV = 'mango_quest_state_dev'; // 開発進捗
+
+  let currentMode = localStorage.getItem(AUTH_KEY) || null; // "prod" | "dev" | null
+
+  function getStateKey() {
+    return currentMode === 'dev' ? STATE_KEY_DEV : STATE_KEY;
+  }
+
   function getState() {
     try {
-      const s = localStorage.getItem('mango_quest_state');
+      const s = localStorage.getItem(getStateKey());
       return s ? JSON.parse(s) : { cleared: [] };
     } catch { return { cleared: [] }; }
   }
 
   function saveState(state) {
-    localStorage.setItem('mango_quest_state', JSON.stringify(state));
+    localStorage.setItem(getStateKey(), JSON.stringify(state));
   }
 
   let state = getState();
@@ -870,6 +907,13 @@
     }
 
     document.getElementById('map-card').style.display = (mapCleared && !mapUsed) ? 'block' : 'none';
+
+    // 全クリア後に本番モードのみリスタートボタンを表示
+    const restartSection = document.getElementById('restart-section');
+    if (restartSection) {
+      restartSection.style.display = (mapUsed && currentMode === 'prod') ? 'block' : 'none';
+    }
+
     renderHistory();
   }
 
@@ -1266,15 +1310,33 @@
     updateUI();
   }
 
-  // ── パスワード認証（一度認証したらlocalStorageに保存） ──
-  const PW = 'ayaka1017';
-  const PW_KEY = 'mango_quest_auth';
+  function goToPasswordScreen() {
+    localStorage.removeItem(AUTH_KEY);
+    currentMode = null;
+    const screen = document.getElementById('password-screen');
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').textContent = '';
+    screen.style.display = 'flex';
+    screen.style.opacity = '0';
+    setTimeout(() => {
+      screen.style.transition = 'opacity 0.4s ease';
+      screen.style.opacity = '1';
+    }, 10);
+  }
 
+  // ── パスワード認証 ──
   function checkPassword() {
     const val = document.getElementById('pw-input').value;
-    if (val === PW) {
-      localStorage.setItem(PW_KEY, '1');
+    const mode = PASSWORDS[val];
+    if (mode) {
+      currentMode = mode;
+      localStorage.setItem(AUTH_KEY, mode);
+      // ログインのたびに進捗をリセット
+      state = { cleared: [] };
+      saveState(state);
       dismissPasswordScreen();
+      updateUI();
+      applyDevMode();
     } else {
       const err = document.getElementById('pw-error');
       err.textContent = '❌ パスワードが違うよ！もう一度試してね';
@@ -1296,8 +1358,75 @@
     setTimeout(() => { screen.style.display = 'none'; }, 500);
   }
 
-  // ページ読み込み時：認証済みなら即スキップ
-  if (localStorage.getItem(PW_KEY) === '1') {
+  // モードに応じてdev-panelの表示を切り替え
+  function applyDevMode() {
+    const devPanel = document.getElementById('dev-panel');
+    if (!devPanel) return;
+    if (currentMode === 'dev') {
+      devPanel.style.display = 'block';
+      const inner = devPanel.querySelector('div');
+      if (inner) inner.style.display = 'flex';
+    } else {
+      devPanel.style.display = 'none';
+    }
+  }
+
+  // リスタート確認モーダルを表示
+  function showRestartConfirm() {
+    const overlay = document.getElementById('restart-modal-overlay');
+    document.getElementById('restart-pw-input').value = '';
+    document.getElementById('restart-pw-error').textContent = '';
+    overlay.style.display = 'flex';
+  }
+
+  // リスタート確認モーダルを閉じる
+  function closeRestartConfirm() {
+    document.getElementById('restart-modal-overlay').style.display = 'none';
+  }
+
+  // リスタート実行（パスワード確認後）
+  function confirmRestart() {
+    const val = document.getElementById('restart-pw-input').value;
+    if (val === 'ayaka1017') {
+      closeRestartConfirm();
+      // 進捗をリセット
+      state = { cleared: [] };
+      saveState(state);
+      // 認証情報もクリアしてパスワード画面へ
+      localStorage.removeItem(AUTH_KEY);
+      currentMode = null;
+      const screen = document.getElementById('password-screen');
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-error').textContent = '';
+      screen.style.display = 'flex';
+      screen.style.opacity = '0';
+      setTimeout(() => {
+        screen.style.transition = 'opacity 0.4s ease';
+        screen.style.opacity = '1';
+      }, 10);
+    } else {
+      const err = document.getElementById('restart-pw-error');
+      err.textContent = '❌ パスワードが違うよ！';
+      const input = document.getElementById('restart-pw-input');
+      input.style.borderColor = '#cc3333';
+      input.style.boxShadow = '0 0 0 3px rgba(204,51,51,0.1)';
+      setTimeout(() => {
+        err.textContent = '';
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+      }, 2000);
+    }
+  }
+
+  document.getElementById('restart-pw-input') && document.getElementById('restart-pw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmRestart();
+  });
+
+  // ページ読み込み時：認証済みならリセットしてスキップ
+  if (currentMode) {
+    // ログインのたびに進捗をリセット
+    state = { cleared: [] };
+    saveState(state);
     document.getElementById('password-screen').style.display = 'none';
   }
 
@@ -1307,6 +1436,7 @@
 
   makeStars();
   updateUI();
+  applyDevMode();
 
   document.getElementById('map-use-btn').addEventListener('click', useMapBtn);
 </script>
