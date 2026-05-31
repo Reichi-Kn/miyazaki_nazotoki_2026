@@ -838,20 +838,17 @@
       const key = getStateKey();
       const s = localStorage.getItem(key);
       const parsed = s ? JSON.parse(s) : null;
-      // フォールバック：もう一方のキーも確認し、進捗が多い方を使う
       const otherKey = key === STATE_KEY ? STATE_KEY_DEV : STATE_KEY;
       const sOther = localStorage.getItem(otherKey);
       const parsedOther = sOther ? JSON.parse(sOther) : null;
       if (!parsed && !parsedOther) return { cleared: [] };
       if (!parsed) return parsedOther;
       if (!parsedOther) return parsed;
-      // 両方ある場合はクリア数が多い方を優先
       return (parsedOther.cleared.length > parsed.cleared.length) ? parsedOther : parsed;
     } catch { return { cleared: [] }; }
   }
 
   function saveState(state) {
-    // 本番・開発両キーに書くことでSafariリロード後も進捗が消えない
     const json = JSON.stringify(state);
     try { localStorage.setItem(STATE_KEY, json); } catch(e) {}
     try { localStorage.setItem(STATE_KEY_DEV, json); } catch(e) {}
@@ -924,7 +921,9 @@
     // 全クリア後に本番モードのみリスタートボタンを表示
     const restartSection = document.getElementById('restart-section');
     if (restartSection) {
-      const allDone = !!state.mapUsed && !!state.qrUnlocked && currentMode === 'prod';
+      // SafariはlocalStorageのcurrentModeが取れないことがあるため
+      // currentModeの条件を外し、進捗フラグだけで判定する
+      const allDone = !!state.mapUsed && !!state.qrUnlocked;
       restartSection.style.display = allDone ? 'block' : 'none';
     }
 
@@ -1276,9 +1275,9 @@
   function showQRModal() {
     document.getElementById('modal-icon').innerHTML = '';
     document.getElementById('modal-icon').className = 'modal-icon';
-    document.getElementById('modal-title').textContent = '';
+    document.getElementById('modal-title').textContent = 'Present for you!';
     document.getElementById('modal-title').className = 'modal-title';
-    document.getElementById('modal-comment').textContent = 'QRコードをスキャンしてね🥭';
+    document.getElementById('modal-comment').textContent = '';
 
     const img = document.getElementById('modal-image');
     img.src = 'Anniv_song_rink.png';
