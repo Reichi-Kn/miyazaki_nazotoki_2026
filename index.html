@@ -911,7 +911,7 @@
     // 全クリア後に本番モードのみリスタートボタンを表示
     const restartSection = document.getElementById('restart-section');
     if (restartSection) {
-      const allDone = !!state.mapUsed && currentMode === 'prod';
+      const allDone = !!state.mapUsed && !!state.qrUnlocked && currentMode === 'prod';
       restartSection.style.display = allDone ? 'block' : 'none';
     }
 
@@ -1006,6 +1006,11 @@
     if (state.mapUsed) {
       if (normalized === SECRET_CODE) {
         input.value = '';
+        if (!state.qrUnlocked) {
+          state.qrUnlocked = true;
+          saveState(state);
+          updateUI();
+        }
         showQRModal();
       } else {
         showModal({ icon: '✕', title: '不正解', titleClass: 'wrong', comment: 'もう一度確認してみて！', image: null, onClose: null });
@@ -1030,8 +1035,10 @@
   }
 
   function useMapBtn() {
+    state.mapUsed = true;
+    saveState(state);
     updateUI();
-    playMapAnimation();
+    showModal(MANGO_MODAL_DATA);
   }
 
   let _mapAnimPhase = 'idle';
@@ -1112,9 +1119,11 @@
   document.getElementById('map-anim-overlay').addEventListener('click', function() {
     if (_mapAnimPhase !== 'mango') return;
     closeMapAnim(function() {
-      state.mapUsed = true;
-      saveState(state);
-      updateUI();
+      if (!state.mapUsed) {
+        state.mapUsed = true;
+        saveState(state);
+        updateUI();
+      }
       showModal(MANGO_MODAL_DATA);
     });
   });
