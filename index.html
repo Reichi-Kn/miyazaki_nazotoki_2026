@@ -623,6 +623,19 @@
 </head>
 <body>
 
+
+<!-- パスワード画面 -->
+<div id="password-screen" style="position:fixed;inset:0;z-index:999;background:#FFFDF7;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;font-family:'Zen Maru Gothic',sans-serif;">
+  <div style="width:100%;max-width:360px;background:linear-gradient(135deg,#FFFBF0,#FFF5D6);border:1.5px solid rgba(196,125,14,0.3);border-radius:24px;padding:36px 28px;text-align:center;box-shadow:0 4px 32px rgba(196,125,14,0.12);position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#E8A020,transparent);"></div>
+    <div style="font-size:48px;margin-bottom:8px;">🔐</div>
+    <div style="font-family:'Kaisei Decol',serif;font-size:13px;letter-spacing:0.3em;color:#C47D0E;margin-bottom:4px;">ANNIVERSARY QUEST</div>
+    <div style="font-family:'Kaisei Decol',serif;font-size:20px;font-weight:700;background:linear-gradient(135deg,#8B5500,#E8A020);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:24px;">パスワードを入力してね</div>
+    <input id="pw-input" type="password" placeholder="password..." autocomplete="off" style="width:100%;background:rgba(255,255,255,0.85);border:1.5px solid rgba(196,125,14,0.3);border-radius:14px;padding:14px 16px;font-family:'Zen Maru Gothic',sans-serif;font-size:16px;color:#3A2800;outline:none;-webkit-appearance:none;margin-bottom:12px;transition:border-color 0.2s,box-shadow 0.2s;" />
+    <div id="pw-error" style="font-size:12px;color:#cc3333;margin-bottom:12px;min-height:18px;"></div>
+    <button onclick="checkPassword()" style="width:100%;background:linear-gradient(135deg,#8B5500,#E8A020);border:none;border-radius:14px;padding:15px;font-family:'Zen Maru Gothic',sans-serif;font-size:16px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(139,85,0,0.25);transition:transform 0.15s;-webkit-tap-highlight-color:transparent;">はじめる ✦</button>
+  </div>
+</div>
 <div class="stars" id="stars"></div>
 
 <div class="wrapper">
@@ -1263,6 +1276,34 @@
     saveState(state);
     updateUI();
   }
+
+  // パスワード画面
+  const PW = 'ayaka1017';
+
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    if (val === PW) {
+      const screen = document.getElementById('password-screen');
+      screen.style.transition = 'opacity 0.5s ease';
+      screen.style.opacity = '0';
+      setTimeout(() => { screen.style.display = 'none'; }, 500);
+    } else {
+      const err = document.getElementById('pw-error');
+      err.textContent = '❌ パスワードが違うよ！もう一度試してね';
+      const input = document.getElementById('pw-input');
+      input.style.borderColor = '#cc3333';
+      input.style.boxShadow = '0 0 0 3px rgba(204,51,51,0.1)';
+      setTimeout(() => {
+        err.textContent = '';
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+      }, 2000);
+    }
+  }
+
+  document.getElementById('pw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
 
   makeStars();
   updateUI();
