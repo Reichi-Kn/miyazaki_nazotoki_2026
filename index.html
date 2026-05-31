@@ -985,19 +985,16 @@
   }
 
   function useMapBtn() {
-    // mapUsedはアニメーション完了（モーダルを閉じた）後に保存する
-    // リロード時は地図を使う前の状態に戻る
     updateUI();
     playMapAnimation();
   }
 
   let _mapAnimPhase = 'idle';
-  let _waitEffectInterval = null; // waitエフェクトのintervalを外部管理
+  let _waitEffectInterval = null;
 
   function playMapAnimation() {
     _mapAnimPhase = 'map';
 
-    // 前回のwaitエフェクトが残っていればクリア
     if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
 
     const overlay   = document.getElementById('map-anim-overlay');
@@ -1022,7 +1019,6 @@
     msg.style.opacity = '0';
     closeBtn.style.opacity = '0';
 
-    // ① 地図登場
     setTimeout(() => {
       mapImg.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
       mapImg.style.opacity = '1';
@@ -1045,9 +1041,7 @@
       startWaitEffect(waitEl);
     }, 3100);
 
-    // ② マンゴー登場
     setTimeout(() => {
-      // waitエフェクト停止
       if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
       waitEl.style.display = 'none';
       waitEl.innerHTML = '';
@@ -1070,11 +1064,9 @@
     }, 6200);
   }
 
-  // タップ → オーバーレイを閉じてmapUsedを保存してモーダルを表示
   document.getElementById('map-anim-overlay').addEventListener('click', function() {
     if (_mapAnimPhase !== 'mango') return;
     closeMapAnim(function() {
-      // アニメーションを最後まで見た時点でmapUsedを保存
       state.mapUsed = true;
       saveState(state);
       updateUI();
@@ -1085,7 +1077,6 @@
   function startWaitEffect(container) {
     const STARS = ['✦','★','✶','·','⋆','✸'];
     let count = 0;
-    // 既存のintervalをクリアしてから新規作成
     if (_waitEffectInterval) { clearInterval(_waitEffectInterval); }
     _waitEffectInterval = setInterval(() => {
       if (!container.parentNode || container.style.display === 'none') {
@@ -1115,10 +1106,8 @@
     }, 80);
   }
 
-  // コールバック対応版 closeMapAnim
   function closeMapAnim(callback) {
     _mapAnimPhase = 'idle';
-    // waitエフェクトを止める
     if (_waitEffectInterval) { clearInterval(_waitEffectInterval); _waitEffectInterval = null; }
     const overlay = document.getElementById('map-anim-overlay');
     overlay.style.opacity = '0';
@@ -1277,16 +1266,15 @@
     updateUI();
   }
 
-  // パスワード画面
+  // ── パスワード認証（一度認証したらlocalStorageに保存） ──
   const PW = 'ayaka1017';
+  const PW_KEY = 'mango_quest_auth';
 
   function checkPassword() {
     const val = document.getElementById('pw-input').value;
     if (val === PW) {
-      const screen = document.getElementById('password-screen');
-      screen.style.transition = 'opacity 0.5s ease';
-      screen.style.opacity = '0';
-      setTimeout(() => { screen.style.display = 'none'; }, 500);
+      localStorage.setItem(PW_KEY, '1');
+      dismissPasswordScreen();
     } else {
       const err = document.getElementById('pw-error');
       err.textContent = '❌ パスワードが違うよ！もう一度試してね';
@@ -1299,6 +1287,18 @@
         input.style.boxShadow = '';
       }, 2000);
     }
+  }
+
+  function dismissPasswordScreen() {
+    const screen = document.getElementById('password-screen');
+    screen.style.transition = 'opacity 0.5s ease';
+    screen.style.opacity = '0';
+    setTimeout(() => { screen.style.display = 'none'; }, 500);
+  }
+
+  // ページ読み込み時：認証済みなら即スキップ
+  if (localStorage.getItem(PW_KEY) === '1') {
+    document.getElementById('password-screen').style.display = 'none';
   }
 
   document.getElementById('pw-input').addEventListener('keydown', e => {
