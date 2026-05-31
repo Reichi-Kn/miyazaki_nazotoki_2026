@@ -34,7 +34,6 @@
     position: relative;
   }
 
-  /* 背景テクスチャ */
   body::before {
     content: '';
     position: fixed;
@@ -47,7 +46,6 @@
     z-index: 0;
   }
 
-  /* 浮遊する小さな点 */
   .stars {
     position: fixed;
     inset: 0;
@@ -77,7 +75,6 @@
     padding: 0 16px 100px;
   }
 
-  /* ヘッダー */
   .header {
     text-align: center;
     padding: 32px 0 20px;
@@ -103,7 +100,6 @@
     line-height: 1.3;
   }
 
-  /* カード共通 */
   .card-base {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -124,9 +120,7 @@
     opacity: 0.6;
   }
 
-  /* プログレス */
   .progress-card {
-    composes: card-base;
     background: linear-gradient(135deg, #FFFBF0, #FFF5D6);
     border: 1px solid rgba(196,125,14,0.25);
     border-radius: 20px;
@@ -184,7 +178,6 @@
     color: var(--text-muted);
   }
 
-  /* みらいちずカード */
   .map-card {
     background: linear-gradient(135deg, #EBF8F0, #D4F0E4);
     border: 1px solid rgba(34,139,85,0.35);
@@ -238,7 +231,6 @@
     50% { box-shadow: 0 4px 24px rgba(34,139,85,0.22); }
   }
 
-  /* 解答エリア */
   .answer-card {
     background: linear-gradient(135deg, #FFFBF0, #FFF5D6);
     border: 1px solid rgba(196,125,14,0.25);
@@ -315,7 +307,6 @@
 
   .answer-btn:active { transform: scale(0.96); }
 
-  /* 履歴 */
   .history-section { margin-top: 8px; }
 
   .history-label {
@@ -367,7 +358,6 @@
     color: var(--gold-dark);
   }
 
-  /* 全クリ表示 */
   .mango-glow-wrap {
     position: relative;
     width: 180px;
@@ -407,7 +397,6 @@
     50% { transform: translateY(-7px); }
   }
 
-  /* 星パーティクル */
   .mango-star {
     position: absolute;
     pointer-events: none;
@@ -424,7 +413,6 @@
     100% { transform: translate(var(--tx, 40px), var(--ty, -60px)) scale(1) rotate(var(--rot, 180deg)); opacity: 0; }
   }
 
-  /* 光の粒 */
   .mango-particle {
     position: absolute;
     pointer-events: none;
@@ -466,7 +454,6 @@
     color: var(--text-sub);
   }
 
-  /* モーダル */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -612,7 +599,6 @@
 
   .modal-close:active { transform: scale(0.97); }
 
-  /* キラキラ */
   @keyframes sparkle {
     0% { transform: scale(0) rotate(0deg); opacity: 1; }
     100% { transform: scale(1) rotate(180deg); opacity: 0; }
@@ -625,7 +611,6 @@
     font-size: 20px;
   }
 
-  /* 開発用 */
   .dev-panel {
     margin-top: 40px;
     padding: 16px;
@@ -642,17 +627,14 @@
 
 <div class="wrapper">
 
-  <!-- ヘッダー -->
   <div class="header">
     <div class="header-title">✦ ANNIVERSARY QUEST ✦</div>
     <div class="header-main">黄金のマンゴーを探せ！</div>
   </div>
 
-  <!-- プログレス -->
   <div class="progress-card">
     <div class="progress-label">CURRENT MISSION</div>
     <div class="progress-mission" id="mission-text">🔍 Mission 1 を解こう！</div>
-    <!-- 全クリ時のマンゴーミニ表示 -->
     <div id="mission-mango" style="display:none;margin:10px 0 4px;">
       <div class="mango-glow-wrap" id="mango-wrap-mini" style="width:100px;height:100px;margin:0 auto 6px;">
         <div class="mango-glow-ring"></div>
@@ -670,7 +652,6 @@
     </div>
   </div>
 
-  <!-- 解答エリア（常に表示） -->
   <div class="answer-card" id="answer-card">
     <div class="answer-label" id="answer-label">🗝️ 答えを入力してね</div>
     <div class="answer-input-wrap">
@@ -688,14 +669,12 @@
     </div>
   </div>
 
-  <!-- みらいちずカード（4問クリア後に表示） -->
   <div class="map-card" id="map-card" style="display:none">
     <div class="map-card-label">✦ アイテムを入手した！</div>
     <img class="map-card-img" src="miraitizu.png" alt="みらいちず">
     <button class="map-btn" id="map-use-btn">🗺️ みらいちずを使う！</button>
   </div>
 
-  <!-- 全クリ表示 -->
   <div class="completed-card" id="completed-card" style="display:none">
     <div class="mango-glow-wrap" id="mango-wrap">
       <div class="mango-glow-ring"></div>
@@ -705,13 +684,11 @@
     <div class="completed-sub">謎解きコンプリート！おめでとう🎉</div>
   </div>
 
-  <!-- 履歴 -->
   <div class="history-section" id="history-section">
     <div class="history-label">— クリア済みミッション —</div>
     <div id="history-list"></div>
   </div>
 
-  <!-- 🛠️ 開発用ボタン（本番前に削除） -->
   <div class="dev-panel">
     <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'" style="background:none;border:none;font-size:11px;color:rgba(200,80,80,0.4);letter-spacing:0.15em;cursor:pointer;width:100%;">🛠️ 開発用</button>
     <div style="display:none;flex-direction:column;gap:8px;margin-top:10px;">
@@ -720,63 +697,6 @@
     </div>
   </div>
 
-</div>
-
-<!-- 地図→マンゴー演出オーバーレイ -->
-<div id="map-anim-overlay" style="
-  display:none;position:fixed;inset:0;z-index:200;
-  background:#0a0800;
-  align-items:center;justify-content:center;flex-direction:column;
-  cursor:pointer;
-">
-  <!-- 地図フェーズ -->
-  <div id="map-anim-inner" style="position:relative;display:flex;align-items:center;justify-content:center;">
-    <img id="map-anim-img" src="miraitizu.png" style="width:260px;max-width:80vw;border-radius:16px;transition:all 0.6s ease;">
-    <div id="map-anim-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
-  </div>
-
-  <!-- 待機中エフェクト用キャンバス -->
-  <div id="map-anim-wait" style="display:none;position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
-
-  <!-- 画面1: マンゴー発見（タップ待ち） -->
-  <div id="map-anim-mango" style="display:none;flex-direction:column;align-items:center;width:100%;">
-    <div style="position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
-      <div class="mango-glow-ring" style="inset:-20px;"></div>
-      <img id="map-anim-mango-img" src="ougonnomango.png" class="mango-glow-img" style="width:160px;height:160px;">
-      <div id="map-anim-mango-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
-    </div>
-    <div id="map-anim-title" style="
-      font-family:'Kaisei Decol',serif;font-size:24px;font-weight:700;
-      background:linear-gradient(135deg,#C47D0E,#FFD580);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      margin-top:16px;opacity:0;transition:opacity 0.8s ease;text-align:center;
-    ">黄金のマンゴー発見！！</div>
-    <div id="map-anim-tap-hint" style="
-      font-size:12px;color:rgba(255,248,231,0.4);margin-top:40px;
-      opacity:0;transition:opacity 0.8s ease;letter-spacing:0.2em;
-      animation:tapHintPulse 2s ease-in-out infinite;
-    ">タップして続ける</div>
-  </div>
-
-  <!-- 画面2: メッセージ -->
-  <div id="map-anim-msg-screen" style="display:none;flex-direction:column;align-items:center;width:100%;padding:0 32px;">
-    <div style="font-size:48px;margin-bottom:16px;">🥭</div>
-    <div id="map-anim-msg" style="
-      font-size:16px;line-height:2;color:rgba(255,248,231,0.9);
-      text-align:center;white-space:pre-line;
-      opacity:0;transition:opacity 1s ease;
-    ">3周年おめでとう！！
-素敵な旅になったね🧡
-これからもずっと一緒にいようね✨</div>
-    <button id="map-anim-close" onclick="closeMapAnim()" style="
-      margin-top:32px;
-      background:linear-gradient(135deg,#8B5500,#E8A020);
-      border:none;border-radius:14px;padding:14px 40px;
-      font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;
-      color:#fff;cursor:pointer;
-      opacity:0;transition:opacity 0.8s ease;
-    ">とじる</button>
-  </div>
 </div>
 
 <!-- モーダル -->
@@ -848,7 +768,6 @@
     const answerInput = document.getElementById('answer-input');
 
     if (nextIdx < total) {
-      // ミッション進行中
       document.getElementById('mission-text').textContent = `🔍 Mission ${nextIdx + 1} を解こう！`;
       document.getElementById('mission-text').style.display = 'block';
       missionMango.style.display = 'none';
@@ -857,17 +776,14 @@
       answerInput.placeholder = 'ひらがなで入力...';
       document.getElementById('completed-card').style.display = 'none';
     } else if (mapUsed) {
-      // 全クリ！
       document.getElementById('mission-text').style.display = 'none';
       missionMango.style.display = 'block';
       document.getElementById('answer-card').style.display = 'block';
       answerLabel.textContent = '🗝️ 答えを入力してね';
       answerInput.placeholder = 'ひらがなで入力...';
       document.getElementById('completed-card').style.display = 'none';
-      // ミニマンゴーのパーティクル
       setTimeout(() => spawnMiniMangoParticles(), 300);
     } else {
-      // みらいちず待ち
       document.getElementById('mission-text').textContent = `🗺️ みらいちずを使おう！`;
       document.getElementById('mission-text').style.display = 'block';
       missionMango.style.display = 'none';
@@ -942,7 +858,6 @@
     showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: null });
   }
 
-  // シークレットコード
   const SECRET_CODE = 'hanabi8540';
 
   function submitAnswer() {
@@ -955,7 +870,6 @@
       .replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
       .replace(/\s/g, '');
 
-    // 全クリ後はシークレットコードモード
     if (state.mapUsed) {
       if (normalized === SECRET_CODE) {
         input.value = '';
@@ -982,219 +896,24 @@
     }
   }
 
+  // ★ここが変更点：黒背景アニメなし、通常モーダルで表示
   function useMapBtn() {
     state.mapUsed = true;
     saveState(state);
     updateUI();
-    playMapAnimation();
-  }
-
-  let _mapAnimPhase = 'idle'; // idle → map → wait → mango → message
-
-  function playMapAnimation() {
-    _mapAnimPhase = 'map';
-    const overlay  = document.getElementById('map-anim-overlay');
-    const mapImg   = document.getElementById('map-anim-img');
-    const mangoEl  = document.getElementById('map-anim-mango');
-    const msgScreen= document.getElementById('map-anim-msg-screen');
-    const title    = document.getElementById('map-anim-title');
-    const tapHint  = document.getElementById('map-anim-tap-hint');
-    const msg      = document.getElementById('map-anim-msg');
-    const closeBtn = document.getElementById('map-anim-close');
-    const waitEl   = document.getElementById('map-anim-wait');
-
-    // リセット
-    overlay.style.display = 'flex';
-    overlay.style.cursor = 'default';
-    mapImg.style.cssText = 'width:260px;max-width:80vw;border-radius:16px;opacity:0;transform:scale(0.7);transition:all 0.6s ease;';
-    mangoEl.style.display = 'none';
-    msgScreen.style.display = 'none';
-    waitEl.style.display = 'none';
-    waitEl.innerHTML = '';
-    title.style.opacity = '0';
-    tapHint.style.opacity = '0';
-    msg.style.opacity = '0';
-    closeBtn.style.opacity = '0';
-
-    // ① 地図登場
-    setTimeout(() => {
-      mapImg.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
-      mapImg.style.opacity = '1';
-      mapImg.style.transform = 'scale(1)';
-    }, 200);
-
-    // ① 地図キラキラ
-    setTimeout(() => spawnMapAnimParticles(), 900);
-
-    // ① 地図が光って消える
-    setTimeout(() => {
-      mapImg.style.transition = 'opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease';
-      mapImg.style.opacity = '0';
-      mapImg.style.transform = 'scale(1.2)';
-      mapImg.style.filter = 'brightness(4) blur(6px)';
-    }, 2400);
-
-    // ① 地図消去 → 待機エフェクト開始（3秒間）
-    setTimeout(() => {
-      mapImg.style.display = 'none';
-      waitEl.style.display = 'block';
-      _mapAnimPhase = 'wait';
-      startWaitEffect(waitEl);
-    }, 3100);
-
-    // ② 3秒待機後マンゴー登場
-    setTimeout(() => {
-      waitEl.style.display = 'none';
-      waitEl.innerHTML = '';
-      mangoEl.style.display = 'flex';
-      _mapAnimPhase = 'mango';
-      overlay.style.cursor = 'pointer';
-
-      const mangoImg = document.getElementById('map-anim-mango-img');
-      mangoImg.style.opacity = '0';
-      mangoImg.style.transform = 'scale(0.3)';
-      mangoImg.style.transition = 'opacity 0.8s ease, transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
-      setTimeout(() => {
-        mangoImg.style.opacity = '1';
-        mangoImg.style.transform = 'scale(1)';
-      }, 50);
-      spawnMapMangoParticles();
-
-      // タイトル
-      setTimeout(() => { title.style.opacity = '1'; }, 900);
-      // タップヒント
-      setTimeout(() => { tapHint.style.opacity = '1'; }, 1600);
-    }, 6200);
-  }
-
-  // タップで画面2へ
-  document.getElementById('map-anim-overlay').addEventListener('click', function() {
-    if (_mapAnimPhase !== 'mango') return;
-    _mapAnimPhase = 'message';
-    this.style.cursor = 'default';
-
-    const mangoEl   = document.getElementById('map-anim-mango');
-    const msgScreen = document.getElementById('map-anim-msg-screen');
-    const msg       = document.getElementById('map-anim-msg');
-    const closeBtn  = document.getElementById('map-anim-close');
-
-    mangoEl.style.transition = 'opacity 0.4s ease';
-    mangoEl.style.opacity = '0';
-    setTimeout(() => {
-      mangoEl.style.display = 'none';
-      msgScreen.style.display = 'flex';
-      setTimeout(() => { msg.style.opacity = '1'; }, 100);
-      setTimeout(() => { closeBtn.style.opacity = '1'; }, 700);
-    }, 400);
-  });
-
-  // 待機中の星降りエフェクト
-  function startWaitEffect(container) {
-    const STARS = ['✦','★','✶','·','⋆','✸'];
-    let count = 0;
-    const iv = setInterval(() => {
-      if (!container.parentNode || container.style.display === 'none') {
-        clearInterval(iv); return;
-      }
-      if (count++ > 60) { clearInterval(iv); return; }
-      const el = document.createElement('span');
-      el.textContent = STARS[Math.floor(Math.random() * STARS.length)];
-      const x = 10 + Math.random() * 80;
-      const size = 10 + Math.random() * 18;
-      el.style.cssText = `
-        position:absolute;
-        left:${x}%;top:-10px;
-        font-size:${size}px;
-        color:${['rgba(255,215,0,0.8)','rgba(255,255,255,0.7)','rgba(255,200,50,0.6)'][Math.floor(Math.random()*3)]};
-        pointer-events:none;
-        transition: transform ${1.5+Math.random()*1.5}s linear, opacity ${0.5}s ease;
-        opacity:1;
-      `;
-      container.appendChild(el);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          el.style.transform = `translateY(${window.innerHeight + 20}px) rotate(${Math.random()*360}deg)`;
-        });
-      });
-      setTimeout(() => el.remove(), 3500);
-    }, 80);
-  }
-
-  function closeMapAnim() {
-    _mapAnimPhase = 'idle';
-    const overlay = document.getElementById('map-anim-overlay');
-    overlay.style.opacity = '0';
-    overlay.style.transition = 'opacity 0.4s ease';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-      overlay.style.opacity = '';
-      overlay.style.transition = '';
-      const mapImg = document.getElementById('map-anim-img');
-      mapImg.style.display = '';
-      mapImg.style.filter = '';
-      mapImg.style.opacity = '0';
-      mapImg.style.transform = '';
-    }, 400);
-  }
-
-  function spawnMapAnimParticles() {
-    const container = document.getElementById('map-anim-particles');
-    container.innerHTML = '';
-    const STARS = ['✦','★','✶','✸','⋆','✺'];
-    for (let i = 0; i < 16; i++) {
-      const el = document.createElement('span');
-      const angle = (i / 16) * Math.PI * 2;
-      const r = 80 + Math.random() * 60;
-      const tx = Math.round(Math.cos(angle) * r);
-      const ty = Math.round(Math.sin(angle) * r);
-      const dur = (0.8 + Math.random() * 0.6).toFixed(2);
-      el.textContent = STARS[i % STARS.length];
-      el.style.cssText = `
-        position:absolute;left:50%;top:50%;
-        font-size:${12 + Math.random()*14}px;
-        color:${['#fff','#FFD700','#FFE87C'][i%3]};
-        pointer-events:none;
-        opacity:0;
-        transition:all ${dur}s ease-out;
-        transform:translate(-50%,-50%);
-      `;
-      container.appendChild(el);
-      setTimeout(() => {
-        el.style.opacity = '1';
-        el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random()*360}deg)`;
-      }, 50 + i * 40);
-      setTimeout(() => { el.style.opacity = '0'; }, 1200);
-    }
-  }
-
-  function spawnMapMangoParticles() {
-    const container = document.getElementById('map-anim-mango-particles');
-    container.innerHTML = '';
-    const STARS = ['✦','★','✶','✸','⋆','✺','·'];
-    for (let i = 0; i < 20; i++) {
-      const el = document.createElement('span');
-      el.className = 'mango-star';
-      const angle = (i / 20) * Math.PI * 2;
-      const r = 60 + Math.random() * 30;
-      el.textContent = STARS[i % STARS.length];
-      el.style.cssText = `
-        left:90px;top:90px;
-        --tx:${Math.round(Math.cos(angle)*r)}px;
-        --ty:${Math.round(Math.sin(angle)*r)}px;
-        --dur:${(1.8+Math.random()*1.4).toFixed(2)}s;
-        --delay:-${(Math.random()*2).toFixed(2)}s;
-        --size:${(10+Math.random()*12).toFixed(0)}px;
-        --rot:${Math.round(120+Math.random()*240)}deg;
-        color:${['#fff','#FFD700','#FFE87C'][i%3]};
-      `;
-      container.appendChild(el);
-    }
+    showModal({
+      icon: '🥭',
+      title: '黄金のマンゴー発見！！',
+      titleClass: '',
+      comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+      image: 'ougonnomango.png',
+      onClose: null
+    });
   }
 
   function showModal({ icon, title, titleClass, comment, image, onClose }) {
     const iconEl = document.getElementById('modal-icon');
     const isWrong = titleClass === 'wrong';
-    // ○✕はSVGで確実に描画（スマホでも崩れない）
     if (icon === '○') {
       iconEl.innerHTML = '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="#E8A020" stroke-width="6"/></svg>';
     } else if (icon === '✕') {
@@ -1224,7 +943,6 @@
   }
 
   function showQRModal() {
-    // 通常モーダルを流用してQR表示
     document.getElementById('modal-icon').innerHTML = '';
     document.getElementById('modal-icon').className = 'modal-icon';
     document.getElementById('modal-title').textContent = '';
@@ -1283,13 +1001,10 @@
   makeStars();
   updateUI();
 
-  // みらいちずボタンのイベント登録
   document.getElementById('map-use-btn').addEventListener('click', useMapBtn);
 </script>
-</body>
-</html>
+
 <script>
-// 黒背景を透明化してcanvasのdata URLを返す
 function removeBlackBg(imgEl, threshold) {
   threshold = threshold || 60;
   return new Promise(function(resolve) {
@@ -1337,14 +1052,12 @@ async function processStaticImages() {
 async function processModalImage() {
   const img = document.getElementById('modal-image');
   if (!img || img.style.display === 'none' || !img.src || img.src.startsWith('data:')) return;
-  // QRコードは黒背景除去しない
   if (img.src.includes('Anniv_song_rink')) return;
   const threshold = img.src.includes('miraitizu') ? 55 : 30;
   const url = await removeBlackBg(img, threshold);
   img.src = url;
 }
 
-// モーダルが開いたとき画像を処理
 new MutationObserver(function(mutations) {
   mutations.forEach(function(m) {
     if (m.target.classList.contains('show')) {
@@ -1353,13 +1066,11 @@ new MutationObserver(function(mutations) {
   });
 }).observe(document.getElementById('modal'), { attributes: true, attributeFilter: ['class'] });
 
-// 少し遅らせて静的画像を処理（画像読み込み完了待ち）
 window.addEventListener('load', function() {
   setTimeout(processStaticImages, 100);
   setTimeout(spawnMangoParticles, 200);
 });
 
-// モーダル内マンゴー用パーティクル（連続生成）
 let _modalParticleTimer = null;
 function spawnModalMangoParticles() {
   clearInterval(_modalParticleTimer);
@@ -1371,7 +1082,6 @@ function spawnModalMangoParticles() {
       clearInterval(_modalParticleTimer);
       return;
     }
-    // 1バーストで星3〜5個
     const count = 3 + Math.floor(Math.random() * 3);
     for (let i = 0; i < count; i++) {
       const el = document.createElement('span');
@@ -1382,8 +1092,7 @@ function spawnModalMangoParticles() {
       el.style.fontSize = (8 + Math.random() * 14).toFixed(0) + 'px';
       el.style.color = ['#fff','#FFD700','#FFE87C','#FFEC99'][Math.floor(Math.random()*4)];
       el.textContent = isStar ? STARS[Math.floor(Math.random()*STARS.length)] : '·';
-      // モーダル画像周辺からスタート（モーダル中央付近）
-      const startX = 30 + Math.random() * 40; // %
+      const startX = 30 + Math.random() * 40;
       const startY = 20 + Math.random() * 40;
       el.style.left = startX + '%';
       el.style.top = startY + '%';
@@ -1410,12 +1119,10 @@ function spawnModalMangoParticles() {
   _modalParticleTimer = setInterval(burst, 400);
 }
 
-// モーダルが閉じたらタイマー止める
 document.getElementById('modal').addEventListener('transitionend', function(e) {
   if (!this.classList.contains('show')) clearInterval(_modalParticleTimer);
 });
 
-// ミニマンゴー（プログレスカード内）パーティクル
 function spawnMiniMangoParticles() {
   const wrap = document.getElementById('mango-wrap-mini');
   if (!wrap || wrap.dataset.particled) return;
@@ -1457,15 +1164,13 @@ function spawnMiniMangoParticles() {
   }
 }
 
-// マンゴー周りの星・光パーティクル生成
 function spawnMangoParticles() {
   const wrap = document.getElementById('mango-wrap');
   if (!wrap) return;
 
   const STARS = ['✦','★','✶','✸','⋆','✺'];
-  const CX = 90, CY = 90; // wrap中心
+  const CX = 90, CY = 90;
 
-  // 星12個
   for (let i = 0; i < 12; i++) {
     const el = document.createElement('span');
     el.className = 'mango-star';
@@ -1488,7 +1193,6 @@ function spawnMangoParticles() {
     wrap.appendChild(el);
   }
 
-  // 光の粒16個
   for (let i = 0; i < 16; i++) {
     const el = document.createElement('div');
     el.className = 'mango-particle';
@@ -1509,3 +1213,5 @@ function spawnMangoParticles() {
   }
 }
 </script>
+</body>
+</html>
