@@ -12,8 +12,8 @@ const STORY = {
   characters: {
     kamisama: {
       name:   '神様',
-      avatar: 'chara_kamisama.png',
-      emoji:  '🌟',   // 画像が読み込めない場合の代替
+      avatar: 'chara_sennin.png',   // ← ファイル名に合わせた
+      emoji:  '🌟',
       color:  '#FFD700',
     },
     achan: {
@@ -21,27 +21,30 @@ const STORY = {
       avatar: 'chara_achan_back.png',
       emoji:  '🌸',
       color:  '#E8A020',
-      side:   'right',
+    },
+    achan_guts: {
+      name:   'あーちゃん',
+      avatar: 'chara_achan_guts.png',
+      emoji:  '🌸',
+      color:  '#E8A020',
+    },
+    takun: {
+      name:   'たーくん',
+      avatar: 'chara_takun_guts.png',
+      emoji:  '🔥',
+      color:  '#E85020',
     },
   },
 
   // ----------------------------------------------------------
   //  オープニングシーン
-  //  type: 'narration' | 'dialog' | 'choice'
-  //
-  //  narration → 中央にテキストのみ
-  //  dialog    → キャラ吹き出し（character, side: 'left'|'right'）
-  //  choice    → あーちゃんの返答ボタン（choices配列）
-  //              選んだ後は nextSceneIndex で次のシーンへ飛ぶ
   // ----------------------------------------------------------
   opening: [
-    // シーン0: ナレーション
     {
       type: 'narration',
       bg:   'bg_miyazaki.jpg',
       text: '🌴  伝説の黄金のマンゴーが眠る地\n　　　　　　　― 宮 崎 ―',
     },
-    // シーン1: 神様登場
     {
       type:      'dialog',
       bg:        'bg_cave.jpg',
@@ -49,7 +52,6 @@ const STORY = {
       side:      'left',
       text:      'おお……来たか。\nずっと待っておったぞ、あーちゃんよ。',
     },
-    // シーン2: 神様→選択肢へ
     {
       type:      'dialog',
       bg:        'bg_cave.jpg',
@@ -57,7 +59,6 @@ const STORY = {
       side:      'left',
       text:      '黄金のマンゴーを求めて、\nここまで来たのじゃな？',
     },
-    // シーン3: あーちゃんの選択肢
     {
       type: 'choice',
       bg:   'bg_cave.jpg',
@@ -66,25 +67,25 @@ const STORY = {
         { label: 'え、だれ？🤔',        next: 5 },
       ],
     },
-    // シーン4: 「うん！」ルート
+    // 「うん！」ルート
     {
       type:      'dialog',
       bg:        'bg_cave.jpg',
       character: 'kamisama',
       side:      'left',
       text:      'うむ！その意気じゃ！\n謎を解けば、マンゴーへの道が開かれる💪',
-      next:      6,  // シーン6へジャンプ
+      next:      6,
     },
-    // シーン5: 「だれ？」ルート
+    // 「だれ？」ルート
     {
       type:      'dialog',
       bg:        'bg_cave.jpg',
       character: 'kamisama',
       side:      'left',
       text:      'わしか？宮崎に宿る神様じゃよ🌟\nまあよい、謎を解けばわかる！',
-      next:      6,  // シーン6へジャンプ
+      next:      6,
     },
-    // シーン6: 合流後
+    // 合流後
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
@@ -92,7 +93,6 @@ const STORY = {
       side:      'left',
       text:      '謎を全て解いた者だけが\n黄金のマンゴーにたどり着けるのじゃ。',
     },
-    // シーン7: ラスト
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
@@ -102,11 +102,10 @@ const STORY = {
     },
   ],
 
-  // オープニング最後のボタンテキスト
   startButtonText: '冒険をはじめる ✦',
 
   // ----------------------------------------------------------
-  //  Mission2クリア後の演出シーン
+  //  Mission2クリア後・たーくん登場
   // ----------------------------------------------------------
   mission2end: [
     {
@@ -140,4 +139,52 @@ const STORY = {
   ],
 
   mission2endButtonText: '次のミッションへ ✦',
+
+  // ----------------------------------------------------------
+  //  エンディング（黄金のマンゴー発見後・とじるボタンの後）
+  // ----------------------------------------------------------
+  ending: [
+    {
+      type: 'narration',
+      bg:   'bg_miyazaki.jpg',
+      text: '🥭  ついに……黄金のマンゴーを手に入れた！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'よくぞ辿り着いた……\n3年分の絆が、マンゴーを引き寄せたのじゃ。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'あーちゃんすごすぎ！！🔥\n謎全部解いちゃったじゃん！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'えへへ……やったー！！🌸💪',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      '3周年、おめでとう。\nこれからも二人で、素敵な旅を続けるのじゃ✨',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      '3年間ありがとう！\nこれからもよろしく🧡',
+    },
+  ],
+
+  endingButtonText: 'ありがとう ✦',
 };
