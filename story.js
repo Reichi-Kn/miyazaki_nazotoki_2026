@@ -187,4 +187,93 @@ const STORY = {
   ],
 
   endingButtonText: 'ありがとう ✦',
+
+  // ----------------------------------------------------------
+  //  Mission3クリア後・花火アニメ（たーくん＆あーちゃん）
+  // ----------------------------------------------------------
+  mission3end: [
+    {
+      type: 'narration',
+      bg:   'bg_miyazaki.jpg',
+      text: '🎆  花火……きれいだなぁ……',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'わぁ〜！！花火きれい〜〜！！🎆✨\nすごいすごい！！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'takun',
+      side:      'left',
+      text:      'ほんとだ……めちゃくちゃきれいじゃん🎇\nあーちゃんと見れてよかった〜',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'ずっと見てたい……🥺💛',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'takun',
+      side:      'left',
+      text:      'あ！！！\nってか黄金のマンゴー探すの忘れてたーーー！！！😱',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'やばい！！まだ見つけてないじゃん！！💦\nはやくはやく〜！！',
+    },
+  ],
+
+  mission3endButtonText: '急いで探しに行く！ 🥭',
+
+  // ----------------------------------------------------------
+  //  Mission4クリア後・みらいちずアニメ（3人）
+  // ----------------------------------------------------------
+  mission4end: [
+    {
+      type: 'narration',
+      bg:   'bg_jungle.jpg',
+      text: '🗺️  みらいちずを手に入れた……！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'おお……それが「みらいちず」じゃ！\nその地図を使えば、黄金のマンゴーの場所がわかるぞ。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'マジか！！じゃあもうすぐマンゴーゲットじゃん！！🔥',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'やった〜！！地図使えばいいんだね！！🗺️💪',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'さあ……みらいちずを使うのじゃ。\n黄金のマンゴーはもうすぐそこじゃぞ🥭✨',
+    },
+  ],
+
+  mission4endButtonText: 'みらいちずを使う！ 🗺️',
 };
