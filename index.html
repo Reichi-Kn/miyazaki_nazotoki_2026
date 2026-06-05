@@ -816,7 +816,7 @@
     titleClass: '',
     comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
     image: 'ougonnomango.png',
-    onClose: null
+    onClose: () => { if (!state.endingDone) { state.endingDone = true; saveState(state); setTimeout(() => playEnding(() => updateUI()), 200); } }
   };
 
   // ── モード管理（本番 / 開発） ──
