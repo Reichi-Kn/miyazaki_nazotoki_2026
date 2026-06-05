@@ -12,3 +12,13 @@ window.playMission2End = function(onDone) {
 window.playEnding = function(onDone) {
   playOpening(STORY.ending, STORY.endingButtonText || 'ありがとう ✦', onDone);
 };
+
+// Mission3クリア後・花火アニメ
+window.playMission3End = function(onDone) {
+  playOpening(STORY.mission3end, STORY.mission3endButtonText || '次のミッションへ ✦', onDone);
+};
+
+// Mission4クリア後・みらいちずアニメ
+window.playMission4End = function(onDone) {
+  playOpening(STORY.mission4end, STORY.mission4endButtonText || 'みらいちずを使う！ 🗺️', onDone);
+};
