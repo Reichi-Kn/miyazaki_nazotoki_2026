@@ -1039,7 +1039,18 @@
       input.value = '';
       state.cleared.push(q.id);
       saveState(state);
-      showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => { updateUI(); } });
+      // Mission2クリア後→たーくん登場演出
+      if (q.id === 2 && !state.mission2endDone) {
+        showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
+          state.mission2endDone = true;
+          saveState(state);
+          setTimeout(() => {
+            playMission2End(() => { updateUI(); });
+          }, 200);
+        }});
+      } else {
+        showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => { updateUI(); } });
+      }
     } else {
       showModal({ icon: '✕', title: '不正解', titleClass: 'wrong', comment: 'もう一度よく考えてみよう！', image: null, onClose: null });
     }
@@ -1332,6 +1343,14 @@
     updateUI();
   }
 
+  // 開発用：オープニングを再度見る
+  function devReplayOpening() {
+    playOpening(STORY.opening, STORY.startButtonText, () => { updateUI(); });
+  }
+  function devReplayMission2() {
+    playMission2End(() => { updateUI(); });
+  }
+
   function goToPasswordScreen() {
     localStorage.removeItem(AUTH_KEY);
     currentMode = null;
@@ -1355,8 +1374,24 @@
       localStorage.setItem(AUTH_KEY, mode);
       state = getState();
       dismissPasswordScreen();
-      updateUI();
-      applyDevMode();
+      // オープニングアニメーション（初回のみ）
+      if (!state.openingDone) {
+        setTimeout(() => {
+          playOpening(
+            STORY.opening,
+            STORY.startButtonText,
+            () => {
+              state.openingDone = true;
+              saveState(state);
+              updateUI();
+              applyDevMode();
+            }
+          );
+        }, 400);
+      } else {
+        updateUI();
+        applyDevMode();
+      }
     } else {
       const err = document.getElementById('pw-error');
       err.textContent = '❌ パスワードが違うよ！もう一度試してね';
@@ -1671,5 +1706,10 @@ function spawnMangoParticles() {
   }
 }
 </script>
+
+<!-- ── ストーリー・アニメーション ── -->
+<script src="story.js"></script>
+<script src="opening.js"></script>
+<script src="mission2end.js"></script>
 </body>
 </html>
