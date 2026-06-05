@@ -1039,14 +1039,24 @@
       input.value = '';
       state.cleared.push(q.id);
       saveState(state);
-      // Mission2クリア後→たーくん登場演出
+      // ミッションごとのアニメーション分岐
       if (q.id === 2 && !state.mission2endDone) {
         showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
           state.mission2endDone = true;
           saveState(state);
-          setTimeout(() => {
-            playMission2End(() => { updateUI(); });
-          }, 200);
+          setTimeout(() => playMission2End(() => updateUI()), 200);
+        }});
+      } else if (q.id === 3 && !state.mission3endDone) {
+        showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
+          state.mission3endDone = true;
+          saveState(state);
+          setTimeout(() => playMission3End(() => updateUI()), 200);
+        }});
+      } else if (q.id === 4 && !state.mission4endDone) {
+        showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
+          state.mission4endDone = true;
+          saveState(state);
+          setTimeout(() => playMission4End(() => updateUI()), 200);
         }});
       } else {
         showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => { updateUI(); } });
