@@ -407,6 +407,7 @@ const STORY = {
       side:      'right',
       text:      'がさごぞ...',
       delayMs:   2000,
+      tapLockMs: 1000,
     },
   ],
 
