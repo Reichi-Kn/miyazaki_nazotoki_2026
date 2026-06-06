@@ -754,6 +754,7 @@
         <button onclick="devPlayAnim('mission3')"  class="dev-btn">M3花火</button>
         <button onclick="devPlayAnim('mission4')"  class="dev-btn">M4地図</button>
         <button onclick="devPlayAnim('ending')"    class="dev-btn dev-btn-gold">🥭 エンディング</button>
+        <button onclick="devPlayAnim('qrpre')"     class="dev-btn dev-btn-blue">🎁 QRプレアニメ</button>
       </div>
 
       <div style="display:flex;gap:6px;">
@@ -1458,25 +1459,25 @@
 
     // 光が強くなる
     setTimeout(() => {
-      img.style.transition = 'filter 0.8s ease, transform 0.8s ease';
+      img.style.transition = 'filter 1.2s ease, transform 1.2s ease';
       img.style.filter = 'drop-shadow(0 0 40px rgba(255,215,0,1)) drop-shadow(0 0 80px rgba(255,200,0,0.9)) brightness(2)';
       img.style.transform = 'scale(1.2)';
-    }, 1800);
+    }, 2500);
 
     // 画面が白くなる
     const flash = document.createElement('div');
-    flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 0.6s ease;';
+    flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 0.8s ease;';
     overlay.appendChild(flash);
 
     setTimeout(() => {
       flash.style.opacity = '1';
-    }, 2500);
+    }, 4200);
 
     // コールバック → オーバーレイ削除
     setTimeout(() => {
       overlay.remove();
       if (typeof callback === 'function') callback();
-    }, 3100);
+    }, 5200);
   }
 
   function showQRModal() {
@@ -1570,6 +1571,7 @@
       mission3: () => playMission3End(() => updateUI()),
       mission4: () => playMission4End(() => updateUI()),
       ending:   () => playEnding(() => showModal(MANGO_FINAL_MSG)),
+      qrpre:    () => playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || 'プレゼントをひらく ✦', () => playMangoFlash(() => showQRModal())),
     };
     if (map[key]) map[key]();
   }
