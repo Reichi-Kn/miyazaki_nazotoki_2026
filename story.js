@@ -36,6 +36,12 @@ const STORY = {
       emoji:  '🔥',
       color:  '#E85020',
     },
+    mystery_voice: {
+      name:   '???',
+      avatar: 'chara_takun_guts.png',
+      emoji:  '❓',
+      color:  '#aaaaaa',
+    },
   },
 
   // ----------------------------------------------------------
@@ -196,7 +202,7 @@ const STORY = {
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
-      character: 'mystery',
+      character: 'mystery_voice',
       side:      'right',
       text:      'お～い！',
     },
@@ -205,7 +211,7 @@ const STORY = {
       bg:        'bg_jungle.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      'あ！たーくん！',
+      text:      'あ！',
     },
     {
       type:      'dialog',
@@ -322,7 +328,7 @@ const STORY = {
       bg:        'bg_jungle.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'おお……それが「みらいちず」じゃ！\nその地図を使えば、黄金のマンゴーの場所がわかるぞ。',
+      text:      'おお……それは「みらいちず」じゃ！\nその地図を使えば、黄金のマンゴーの場所がわかるぞ。',
     },
     {
       type:      'dialog',
@@ -399,7 +405,7 @@ const STORY = {
       bg:        'bg_miyazaki.jpg',
       character: 'takun',
       side:      'right',
-      text:      'ふぅ......',
+      text:      'がざごぞ...',
       delayMs:   2000,
     },
   ],
