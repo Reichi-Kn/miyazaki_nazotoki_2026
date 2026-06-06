@@ -71,23 +71,6 @@
       50%      { opacity: 1;    transform: scale(1.06); }
     }
 
-    /* 光の筋（放射線） */
-    #op-reveal-streaks {
-      position: absolute; inset: 0;
-      opacity: 0; transition: opacity 2s ease 0.8s;
-      pointer-events: none;
-    }
-    #op-reveal-streaks.lit { opacity: 1; }
-    .op-streak {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 2px; height: 0;
-      background: linear-gradient(to top, rgba(255,230,80,0.5), transparent);
-      transform-origin: bottom center;
-      transition: height 1.8s ease var(--sd,0s);
-    }
-    .op-streak.grow { height: var(--sh, 180px); }
-
     /* 画像（丸枠なし・そのまま大きく） */
     #op-reveal-avatar {
       width: min(62vw, 260px);
@@ -303,7 +286,6 @@
       <div id="op-dim"></div>
       <div id="op-reveal">
         <div id="op-reveal-rays"></div>
-        <div id="op-reveal-streaks"></div>
         <div id="op-reveal-avatar"></div>
         <div id="op-reveal-tap">タップして続ける</div>
       </div>
@@ -323,7 +305,6 @@
   const bgEl      = document.getElementById('op-bg');
   const revealEl     = document.getElementById('op-reveal');
   const revealRays   = document.getElementById('op-reveal-rays');
-  const revealStreaks= document.getElementById('op-reveal-streaks');
   const revealAvatar = document.getElementById('op-reveal-avatar');
   const revealTapEl  = document.getElementById('op-reveal-tap');
   const narText   = document.getElementById('op-narration-text');
@@ -364,24 +345,8 @@
     revealEl.style.opacity = '1';
     revealEl.classList.remove('fade-out');
     revealRays.classList.remove('lit');
-    revealStreaks.classList.remove('lit');
     revealAvatar.classList.remove('show');
     revealTapEl.classList.remove('show');
-    revealStreaks.innerHTML = '';
-
-    // 光の筋を生成
-    const streakCount = 12;
-    for (let i = 0; i < streakCount; i++) {
-      const angle = (360 / streakCount) * i;
-      const len   = 100 + Math.random() * 140;
-      const s = document.createElement('div');
-      s.className = 'op-streak';
-      s.style.cssText = `
-        transform: rotate(${angle}deg) translateX(-50%);
-        --sh:${len}px; --sd:${0.3 + Math.random()*0.6}s;
-      `;
-      revealStreaks.appendChild(s);
-    }
 
     // 画像セット（丸枠なし・そのまま）
     revealAvatar.innerHTML = ch.avatar
@@ -393,9 +358,6 @@
     // ステップ1: 1.2秒後に光が広がり始める
     setTimeout(() => {
       revealRays.classList.add('lit');
-      // 光の筋を伸ばす
-      revealStreaks.classList.add('lit');
-      revealStreaks.querySelectorAll('.op-streak').forEach(s => s.classList.add('grow'));
     }, 1200);
 
     // ステップ2: 2.2秒後に神様登場
@@ -413,8 +375,8 @@
 
   // 登場時の光粒子
   function spawnRevealSparks() {
-    const colors = ['rgba(255,230,80,0.9)','rgba(255,255,200,0.8)','rgba(255,180,40,0.7)'];
-    for (let i = 0; i < 18; i++) {
+    const colors = ['rgba(255,230,80,0.9)','rgba(255,255,200,0.8)','rgba(255,180,40,0.7)','rgba(255,255,255,0.7)'];
+    for (let i = 0; i < 28; i++) {
       const angle = Math.random() * 360;
       const dist  = 40 + Math.random() * 100;
       const el = document.createElement('div');
