@@ -123,9 +123,9 @@
     }
     #op-narration-text {
       font-family: 'Kaisei Decol', serif;
-      font-size: clamp(16px, 4.5vw, 20px);
+      font-size: clamp(15px, 4vw, 18px);
       font-weight: 700; color: #fff;
-      text-align: center; line-height: 2;
+      text-align: center; line-height: 1.5;
       text-shadow: 0 2px 16px rgba(0,0,0,0.9);
       opacity: 0; transform: translateY(14px);
       transition: opacity 0.7s ease, transform 0.7s ease;
@@ -407,24 +407,31 @@
 
   function showDialog(scene) {
     isAnimating = true;
-    revealEl.style.display = 'none';
-    const ch = STORY.characters[scene.character] || {};
-    const isRight = scene.side === 'right';
-    narText.classList.remove('show');
-    dialogEl.classList.remove('show');
-    choicesEl.style.display = 'none';
-    tapHint.style.display = 'block';
+    const doShow = () => {
+      revealEl.style.display = 'none';
+      const ch = STORY.characters[scene.character] || {};
+      const isRight = scene.side === 'right';
+      narText.classList.remove('show');
+      dialogEl.classList.remove('show');
+      choicesEl.style.display = 'none';
+      tapHint.style.display = 'block';
 
-    const nameEl = `<div class="op-name ${scene.revealName ? 'reveal-anim' : ''}" style="color:${ch.color||'#E8A020'};text-align:${isRight?'right':'left'}">${ch.name||''}</div>`;
-    dialogEl.innerHTML = `
-      <div class="op-row ${isRight?'right':''}">
-        ${avatarHTML(scene.character)}
-        <div class="op-col ${isRight?'right':''}">
-          ${nameEl}
-          <div class="op-bubble ${isRight?'right':''}">${(scene.text||'').replace(/\n/g,'<br>')}</div>
-        </div>
-      </div>`;
-    setTimeout(() => { dialogEl.classList.add('show'); isAnimating = false; }, 60);
+      const nameEl = `<div class="op-name ${scene.revealName ? 'reveal-anim' : ''}" style="color:${ch.color||'#E8A020'};text-align:${isRight?'right':'left'}">${ch.name||''}</div>`;
+      dialogEl.innerHTML = `
+        <div class="op-row ${isRight?'right':''}">
+          ${avatarHTML(scene.character)}
+          <div class="op-col ${isRight?'right':''}">
+            ${nameEl}
+            <div class="op-bubble ${isRight?'right':''}">${(scene.text||'').replace(/\n/g,'<br>')}</div>
+          </div>
+        </div>`;
+      setTimeout(() => { dialogEl.classList.add('show'); isAnimating = false; }, 60);
+    };
+    if (scene.delayMs && scene.delayMs > 0) {
+      setTimeout(doShow, scene.delayMs);
+    } else {
+      doShow();
+    }
   }
 
   function showChoice(scene) {
