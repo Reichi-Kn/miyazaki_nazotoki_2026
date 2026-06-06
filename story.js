@@ -68,7 +68,7 @@ const STORY = {
       bg:        'bg_cave.jpg',
       character: 'mystery',
       side:      'left',
-      text:      'ずっと待っておったぞ……\nようやく来たか。',
+      text:      'ずっと待っておったぞ、あーちゃん......',
     },
     // シーン3: 第1の選択肢
     {
