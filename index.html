@@ -1216,7 +1216,14 @@
       state.mapUsed = true;
       saveState(state);
       updateUI();
-      showModal(MANGO_MODAL_DATA);
+      // アニメ先・メッセージは最後だけ
+      if (!state.endingDone) {
+        state.endingDone = true;
+        saveState(state);
+        setTimeout(() => playEnding(() => showModal(MANGO_FINAL_MSG)), 200);
+      } else {
+        setTimeout(() => playEnding(() => showModal(MANGO_FINAL_MSG)), 200);
+      }
     });
   });
 
