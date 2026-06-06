@@ -113,6 +113,35 @@ const STORY = {
   startButtonText: '冒険をはじめる ✦',
 
   // ----------------------------------------------------------
+  //  Mission1クリア後
+  // ----------------------------------------------------------
+  mission1end: [
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'ほほ……一つ目の謎を解けたようじゃな。\nさすがじゃ、あーちゃんよ🌟',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'やったー！！解けた〜！！🌸✨',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      '黄金のマンゴーへの道はまだ続くぞ。\n次の謎も、その調子で頑張るのじゃ💪',
+    },
+  ],
+
+  mission1endButtonText: '次のミッションへ ✦',
+
+  // ----------------------------------------------------------
   //  Mission2クリア後・たーくん登場
   // ----------------------------------------------------------
   mission2end: [
