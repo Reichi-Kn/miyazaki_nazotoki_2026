@@ -853,10 +853,10 @@
 
 <script>
   const QUIZZES = [
-    { id: 1, name: 'Mission 1', answer: 'うみかぜ', comment: 'うみかぜを感じながら黄金のマンゴー探しの旅へ！', image: null },
-    { id: 2, name: 'Mission 2', answer: 'きせき', comment: '正解！キセキの出会いに感謝🌟', image: null },
-    { id: 3, name: 'Mission 3', answer: 'はなび', comment: '正解！さすがあーちゃん🎆', image: null },
-    { id: 4, name: 'Mission 4', answer: 'みらいちず', comment: '正解！ついに地図を手に入れた🗺️', image: 'miraitizu.png' },
+    { id: 1, name: 'Mission 1', answer: 'うみかぜ', comment: '正解！うみかぜを感じながら黄金のマンゴー探しの旅へ！', image: null },
+    { id: 2, name: 'Mission 2', answer: 'きせき', comment: '正解！あれ、この声は？', image: null },
+    { id: 3, name: 'Mission 3', answer: 'はなび', comment: '正解！おっ？なにかやってるぞ？', image: null },
+    { id: 4, name: 'Mission 4', answer: 'みらいちず', comment: '正解！これは...!?', image: 'miraitizu.png' },
   ];
 
   // マンゴー発見時に通常モーダルで表示するデータ
@@ -865,7 +865,7 @@
     icon: '🥭',
     title: '黄金のマンゴー発見！！',
     titleClass: '',
-    comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+    comment: '3周年おめでとう！！\n素敵な旅になったね\nこれからもずっと一緒にいようね✨',
     image: 'ougonnomango.png',
     onClose: () => updateUI()
   };
@@ -875,7 +875,7 @@
     icon: '🥭',
     title: '黄金のマンゴー発見！！',
     titleClass: '',
-    comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+    comment: '3周年おめでとう！！\n素敵な旅になったね\nこれからもずっと一緒にいようね✨',
     image: 'ougonnomango.png',
     onClose: () => {
       if (!state.endingDone) {
@@ -1006,7 +1006,7 @@
   function renderHistory() {
     const list = document.getElementById('history-list');
     const section = document.getElementById('history-section');
-    const items = [...state.cleared];
+    const items = [...new Set(state.cleared)];
     const showMangoHistory = state.mapUsed;
 
     if (items.length === 0 && !showMangoHistory && !state.openingDone) {
@@ -1130,7 +1130,10 @@
           saveState(state);
           updateUI();
         }
-        showQRModal();
+        // アニメーション → マンゴー光演出 → QRコード表示
+        playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || 'プレゼントをひらく ✦', () => {
+          playMangoFlash(() => showQRModal());
+        });
       } else {
         showModal({ icon: '✕', title: '不正解', titleClass: 'wrong', comment: 'もう一度確認してみて！', image: null, onClose: null });
       }
@@ -1145,7 +1148,7 @@
 
     if (normalized === correctNorm) {
       input.value = '';
-      state.cleared.push(q.id);
+      state.cleared = [...new Set([...state.cleared, q.id])];
       saveState(state);
       // ミッションごとのアニメーション分岐
       if (q.id === 1 && !state.mission1endDone) {
@@ -1411,6 +1414,69 @@
     modalCallback = onClose;
     document.getElementById('modal').classList.add('show');
     if (titleClass !== 'wrong') spawnSparkles();
+  }
+
+  // マンゴーが光って画面が真っ白になる演出 → コールバック
+  function playMangoFlash(callback) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:2000;
+      background:#0a0800;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      opacity:0;transition:opacity 0.5s ease;
+    `;
+
+    // マンゴー画像
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;';
+
+    const ring = document.createElement('div');
+    ring.className = 'mango-glow-ring';
+    ring.style.cssText = 'inset:-20px;animation:mangoGlow 1.5s ease-in-out infinite;';
+
+    const img = document.createElement('img');
+    img.src = 'ougonnomango.png';
+    img.className = 'mango-glow-img';
+    img.style.cssText = 'width:150px;height:150px;opacity:0;transform:scale(0.3);transition:opacity 0.7s ease,transform 0.7s cubic-bezier(0.34,1.56,0.64,1);';
+
+    wrap.appendChild(ring);
+    wrap.appendChild(img);
+    overlay.appendChild(wrap);
+    document.body.appendChild(overlay);
+
+    // フェードイン
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    }));
+
+    // マンゴー登場
+    setTimeout(() => {
+      img.style.opacity = '1';
+      img.style.transform = 'scale(1)';
+    }, 500);
+
+    // 光が強くなる
+    setTimeout(() => {
+      img.style.transition = 'filter 0.8s ease, transform 0.8s ease';
+      img.style.filter = 'drop-shadow(0 0 40px rgba(255,215,0,1)) drop-shadow(0 0 80px rgba(255,200,0,0.9)) brightness(2)';
+      img.style.transform = 'scale(1.2)';
+    }, 1800);
+
+    // 画面が白くなる
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 0.6s ease;';
+    overlay.appendChild(flash);
+
+    setTimeout(() => {
+      flash.style.opacity = '1';
+    }, 2500);
+
+    // コールバック → オーバーレイ削除
+    setTimeout(() => {
+      overlay.remove();
+      if (typeof callback === 'function') callback();
+    }, 3100);
   }
 
   function showQRModal() {
