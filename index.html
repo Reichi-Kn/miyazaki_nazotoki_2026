@@ -1040,7 +1040,13 @@
       state.cleared.push(q.id);
       saveState(state);
       // ミッションごとのアニメーション分岐
-      if (q.id === 2 && !state.mission2endDone) {
+      if (q.id === 1 && !state.mission1endDone) {
+        showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
+          state.mission1endDone = true;
+          saveState(state);
+          setTimeout(() => playMission1End(() => updateUI()), 200);
+        }});
+      } else if (q.id === 2 && !state.mission2endDone) {
         showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: () => {
           state.mission2endDone = true;
           saveState(state);
