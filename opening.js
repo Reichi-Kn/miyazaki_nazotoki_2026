@@ -1,34 +1,88 @@
 // ============================================================
 //  opening.js  ―  アニメーションエンジン（触らなくてOK）
-//  セリフ変更は story.js だけ編集してね
 // ============================================================
+(function () {
 
-(function() {
-
+  // ── CSS ────────────────────────────────────────────────────
   const css = `
     #op-overlay {
       position: fixed; inset: 0; z-index: 1100;
-      background: #080400;
+      background: #000;
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-end;
       overflow: hidden;
       font-family: 'Zen Maru Gothic', sans-serif;
+      cursor: pointer;
     }
     #op-bg {
       position: absolute; inset: 0;
-      background-size: cover; background-position: center;
-      opacity: 0; transition: opacity 0.9s ease;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0; transition: opacity 1s ease;
+      /* スマホで縦長画面にも対応 */
+      min-height: 100%;
+      min-width: 100%;
+    }
+    @media (max-aspect-ratio: 1/1) {
+      #op-bg { background-size: cover; background-position: center top; }
     }
     #op-bg.show { opacity: 1; }
     #op-dim {
       position: absolute; inset: 0;
       background: linear-gradient(to bottom,
-        rgba(0,0,0,0.1) 0%,
-        rgba(8,4,0,0.2) 50%,
-        rgba(8,4,0,0.72) 100%);
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.15) 40%,
+        rgba(0,0,0,0.70) 100%);
     }
 
-    /* ナレーション */
+    /* ── reveal演出（神様登場）──────────── */
+    #op-reveal {
+      position: absolute; inset: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+      background: #000;
+      opacity: 1; transition: opacity 1.2s ease;
+      pointer-events: none;
+    }
+    #op-reveal.fade-out { opacity: 0; }
+    #op-reveal-glow {
+      width: 130px; height: 130px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,230,80,0.0) 30%, transparent 70%);
+      position: absolute;
+      transition: background 1.5s ease;
+    }
+    #op-reveal-glow.lit {
+      background: radial-gradient(circle, rgba(255,230,80,0.55) 20%, rgba(255,180,0,0.15) 60%, transparent 80%);
+      box-shadow: 0 0 60px 30px rgba(255,200,0,0.25);
+    }
+    #op-reveal-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      border: 3px solid rgba(255,215,0,0.0);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px;
+      background: rgba(196,125,14,0.0);
+      opacity: 0; transform: scale(0.6);
+      transition: opacity 1.4s ease, transform 1.4s ease, border-color 1.4s ease, background 1.4s ease;
+      position: relative; z-index: 1;
+    }
+    #op-reveal-avatar.show {
+      opacity: 1; transform: scale(1);
+      border-color: rgba(255,215,0,0.6);
+      background: rgba(196,125,14,0.15);
+    }
+    #op-reveal-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    #op-reveal-tap {
+      font-size: 11px; color: rgba(255,248,220,0.4);
+      letter-spacing: 0.2em; margin-top: 8px;
+      animation: opTapPulse 2s ease-in-out infinite;
+      position: relative; z-index: 1;
+      opacity: 0; transition: opacity 1s ease 1.8s;
+    }
+    #op-reveal-tap.show { opacity: 1; }
+
+    /* ── ナレーション ──────────────────── */
     #op-narration {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
@@ -36,82 +90,70 @@
     }
     #op-narration-text {
       font-family: 'Kaisei Decol', serif;
-      font-size: 19px; font-weight: 700;
-      color: #fff; text-align: center; line-height: 2;
-      text-shadow: 0 2px 16px rgba(0,0,0,0.85);
+      font-size: clamp(16px, 4.5vw, 20px);
+      font-weight: 700; color: #fff;
+      text-align: center; line-height: 2;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.9);
       opacity: 0; transform: translateY(14px);
       transition: opacity 0.7s ease, transform 0.7s ease;
       white-space: pre-line;
     }
     #op-narration-text.show { opacity: 1; transform: translateY(0); }
 
-    /* 会話エリア */
+    /* ── 会話エリア ────────────────────── */
     #op-dialog {
       position: relative; z-index: 3;
       width: 100%; max-width: 480px;
-      padding: 0 14px 20px;
+      padding: 0 14px 16px;
       display: flex; flex-direction: column; gap: 6px;
       opacity: 0; transform: translateY(16px);
       transition: opacity 0.45s ease, transform 0.45s ease;
     }
     #op-dialog.show { opacity: 1; transform: translateY(0); }
 
-    /* アバター行 */
-    .op-row {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-    }
+    .op-row { display: flex; align-items: flex-end; gap: 10px; }
     .op-row.right { flex-direction: row-reverse; }
 
-    /* アバター画像 */
     .op-avatar {
-      width: 54px; height: 54px;
-      min-width: 54px;
+      width: 50px; height: 50px; min-width: 50px;
       border-radius: 50%;
       border: 2px solid rgba(232,160,32,0.6);
       background: rgba(196,125,14,0.15);
       overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      flex-shrink: 0;
+      font-size: 24px; flex-shrink: 0;
     }
-    .op-avatar img {
-      width: 100%; height: 100%;
-      object-fit: cover; border-radius: 50%;
-      display: block;
-    }
+    .op-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
-    /* 吹き出しカラム */
-    .op-col {
-      display: flex; flex-direction: column; gap: 3px;
-      flex: 1; min-width: 0;
-    }
+    .op-col { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
     .op-col.right { align-items: flex-end; }
 
     .op-name {
       font-size: 10px; font-weight: 700;
-      letter-spacing: 0.08em;
-      color: #fff; opacity: 0.85;
-      padding: 0 4px;
+      letter-spacing: 0.08em; color: #fff; opacity: 0.85; padding: 0 4px;
     }
-
     .op-bubble {
       background: rgba(255,252,238,0.94);
       border-radius: 16px; border-top-left-radius: 4px;
       padding: 11px 14px;
-      font-size: 14px; line-height: 1.8;
-      color: #3A2800;
+      font-size: clamp(13px, 3.5vw, 15px);
+      line-height: 1.8; color: #3A2800;
       white-space: pre-line;
       box-shadow: 0 3px 14px rgba(0,0,0,0.2);
       border: 1px solid rgba(196,125,14,0.18);
       word-break: break-all;
     }
-    .op-bubble.right {
-      border-radius: 16px; border-top-right-radius: 4px;
-    }
+    .op-bubble.right { border-radius: 16px; border-top-right-radius: 4px; }
 
-    /* 選択肢 */
+    /* 名前reveal光りアニメ */
+    @keyframes nameReveal {
+      0%   { opacity:0; text-shadow: 0 0 20px rgba(255,215,0,0.9); }
+      60%  { opacity:1; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+      100% { opacity:0.85; text-shadow: none; }
+    }
+    .op-name.reveal-anim { animation: nameReveal 1s ease forwards; }
+
+    /* ── 選択肢 ────────────────────────── */
     #op-choices {
       position: relative; z-index: 3;
       width: 100%; max-width: 480px;
@@ -123,15 +165,16 @@
       border: 1.5px solid rgba(196,125,14,0.35);
       border-radius: 14px; padding: 14px 18px;
       font-family: 'Zen Maru Gothic', sans-serif;
-      font-size: 15px; font-weight: 700;
-      color: #3A2800; cursor: pointer; text-align: left;
+      font-size: clamp(14px, 3.8vw, 16px);
+      font-weight: 700; color: #3A2800;
+      cursor: pointer; text-align: left;
       box-shadow: 0 3px 12px rgba(0,0,0,0.16);
       transition: transform 0.12s, background 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
     .op-choice-btn:active { transform: scale(0.97); background: rgba(255,245,200,0.97); }
 
-    /* タップヒント */
+    /* ── タップヒント ──────────────────── */
     #op-tap-hint {
       position: absolute; bottom: 8px; right: 16px;
       font-size: 10px; color: rgba(255,248,220,0.45);
@@ -140,27 +183,52 @@
     }
     @keyframes opTapPulse { 0%,100%{opacity:.3} 50%{opacity:.9} }
 
-    /* ボタン */
+    /* ── スタートボタン ────────────────── */
     #op-start-btn {
       display: none; position: relative; z-index: 4;
       background: linear-gradient(135deg, #8B5500, #E8A020);
       border: none; border-radius: 16px;
-      padding: 16px 44px; margin: 0 auto 44px;
+      padding: 15px 40px; margin: 0 auto 36px;
       font-family: 'Zen Maru Gothic', sans-serif;
-      font-size: 16px; font-weight: 700; color: #fff;
+      font-size: clamp(14px, 4vw, 16px);
+      font-weight: 700; color: #fff;
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(139,85,0,0.38);
       -webkit-tap-highlight-color: transparent;
       opacity: 0;
     }
     #op-start-btn.show { display: block; animation: opBtnIn 0.6s ease forwards; }
-    @keyframes opBtnIn {
-      from { opacity:0; transform:translateY(16px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+    @keyframes opBtnIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
     #op-start-btn:active { transform: scale(0.97); }
 
-    /* パーティクル */
+    /* ── 花火アニメ ────────────────────── */
+    .op-firework {
+      position: absolute; pointer-events: none; z-index: 2;
+      width: 6px; height: 6px; border-radius: 50%;
+      animation: opFwLaunch var(--dur, 0.8s) ease-out forwards var(--dly, 0s);
+    }
+    @keyframes opFwLaunch {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx,0px), var(--ty,-200px)) scale(0.3); opacity: 0; }
+    }
+    .op-firework-burst {
+      position: absolute; pointer-events: none; z-index: 2;
+      animation: opFwBurst var(--bdur, 0.6s) ease-out forwards var(--bdly, 0.7s);
+      opacity: 0;
+    }
+    .op-firework-burst::before {
+      content: var(--char, '✦');
+      font-size: var(--bsz, 14px);
+      color: var(--bcl, #FFD700);
+      text-shadow: 0 0 6px var(--bcl, #FFD700);
+    }
+    @keyframes opFwBurst {
+      0%   { opacity: 1; transform: translate(var(--bx,0px), var(--by,0px)) scale(0.2); }
+      60%  { opacity: 1; transform: translate(calc(var(--bx,0px)*2.5), calc(var(--by,0px)*2.5)) scale(1); }
+      100% { opacity: 0; transform: translate(calc(var(--bx,0px)*3.5), calc(var(--by,0px)*3.5)) scale(0.5); }
+    }
+
+    /* ── パーティクル ──────────────────── */
     .op-ptcl {
       position: absolute; pointer-events: none; z-index: 1;
       font-size: var(--sz,12px); color: var(--cl,rgba(255,215,0,0.5));
@@ -174,33 +242,38 @@
       100% { opacity:0; transform:translateY(-90px) scale(1) rotate(var(--rot,180deg)); }
     }
   `;
-
   const styleEl = document.createElement('style');
   styleEl.textContent = css;
   document.head.appendChild(styleEl);
 
-  const html = `
-  <div id="op-overlay" style="display:none;">
-    <div id="op-bg"></div>
-    <div id="op-dim"></div>
-    <div id="op-narration"><div id="op-narration-text"></div></div>
-    <div id="op-dialog"></div>
-    <div id="op-choices" style="display:none;"></div>
-    <div id="op-tap-hint">タップして続ける</div>
-    <button id="op-start-btn"></button>
-  </div>`;
+  // ── HTML ───────────────────────────────────────────────────
+  document.body.insertAdjacentHTML('afterbegin', `
+    <div id="op-overlay" style="display:none;">
+      <div id="op-bg"></div>
+      <div id="op-dim"></div>
+      <div id="op-reveal">
+        <div id="op-reveal-glow"></div>
+        <div id="op-reveal-avatar"></div>
+        <div id="op-reveal-tap">タップして続ける</div>
+      </div>
+      <div id="op-narration"><div id="op-narration-text"></div></div>
+      <div id="op-dialog"></div>
+      <div id="op-choices" style="display:none;"></div>
+      <div id="op-tap-hint">タップして続ける</div>
+      <button id="op-start-btn"></button>
+    </div>`);
 
-  document.body.insertAdjacentHTML('afterbegin', html);
-
-  // ── エンジン ─────────────────────────────────────────────
-  let sceneIndex = 0;
-  let isAnimating = false;
-  let onComplete = null;
-  let currentScenes = [];
-  let currentStartBtnText = '';
+  // ── エンジン ────────────────────────────────────────────────
+  let sceneIndex = 0, isAnimating = false, onComplete = null;
+  let currentScenes = [], currentStartBtnText = '';
+  let revealTapped = false;
 
   const overlay   = document.getElementById('op-overlay');
-  const bg        = document.getElementById('op-bg');
+  const bgEl      = document.getElementById('op-bg');
+  const revealEl  = document.getElementById('op-reveal');
+  const revealGlow   = document.getElementById('op-reveal-glow');
+  const revealAvatar = document.getElementById('op-reveal-avatar');
+  const revealTapEl  = document.getElementById('op-reveal-tap');
   const narText   = document.getElementById('op-narration-text');
   const dialogEl  = document.getElementById('op-dialog');
   const choicesEl = document.getElementById('op-choices');
@@ -208,59 +281,92 @@
   const startBtn  = document.getElementById('op-start-btn');
 
   function setBg(src) {
-    if (!src) { bg.classList.remove('show'); return; }
-    bg.style.backgroundImage = `url('${src}')`;
-    requestAnimationFrame(() => requestAnimationFrame(() => bg.classList.add('show')));
+    if (!src) { bgEl.classList.remove('show'); return; }
+    bgEl.style.backgroundImage = `url('${src}')`;
+    requestAnimationFrame(() => requestAnimationFrame(() => bgEl.classList.add('show')));
   }
 
   function avatarHTML(charKey) {
     const ch = STORY.characters[charKey];
     if (!ch) return `<div class="op-avatar">👤</div>`;
-    const fallback = ch.emoji || '👤';
-    return `<div class="op-avatar" data-fallback="${fallback}">
+    return `<div class="op-avatar">
       <img src="${ch.avatar}" alt="${ch.name}"
         onload="this.style.opacity='1'"
-        onerror="this.parentNode.innerHTML='${fallback}'"
+        onerror="this.parentNode.innerHTML='${ch.emoji||'👤'}'"
         style="opacity:0;transition:opacity 0.3s;">
     </div>`;
   }
 
+  // reveal演出（神様登場）
+  function showReveal(scene) {
+    isAnimating = true;
+    revealTapped = false;
+    const ch = STORY.characters[scene.character] || {};
+
+    // 画面リセット
+    narText.classList.remove('show');
+    dialogEl.classList.remove('show');
+    choicesEl.style.display = 'none';
+    tapHint.style.display = 'none';
+
+    // reveal層を真っ暗で表示
+    revealEl.style.display = 'flex';
+    revealEl.style.opacity = '1';
+    revealEl.classList.remove('fade-out');
+    revealGlow.classList.remove('lit');
+    revealAvatar.classList.remove('show');
+    revealTapEl.classList.remove('show');
+
+    // アバターセット
+    revealAvatar.innerHTML = ch.avatar
+      ? `<img src="${ch.avatar}" alt="${ch.name}" onerror="this.parentNode.innerHTML='${ch.emoji||'✨'}'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : (ch.emoji || '✨');
+
+    // 少し待ってからフワッと光る
+    setTimeout(() => {
+      revealGlow.classList.add('lit');
+      revealAvatar.classList.add('show');
+    }, 400);
+    setTimeout(() => {
+      revealTapEl.classList.add('show');
+      isAnimating = false;
+    }, 2000);
+  }
+
   function showNarration(scene) {
     isAnimating = true;
+    revealEl.style.display = 'none';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     choicesEl.style.display = 'none';
     tapHint.style.display = 'block';
-    setTimeout(() => {
-      narText.textContent = scene.text;
-      narText.classList.add('show');
-      isAnimating = false;
-    }, 180);
+    setTimeout(() => { narText.textContent = scene.text; narText.classList.add('show'); isAnimating = false; }, 180);
   }
 
   function showDialog(scene) {
     isAnimating = true;
+    revealEl.style.display = 'none';
     const ch = STORY.characters[scene.character] || {};
     const isRight = scene.side === 'right';
-
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     choicesEl.style.display = 'none';
     tapHint.style.display = 'block';
 
+    const nameEl = `<div class="op-name ${scene.revealName ? 'reveal-anim' : ''}" style="color:${ch.color||'#E8A020'};text-align:${isRight?'right':'left'}">${ch.name||''}</div>`;
     dialogEl.innerHTML = `
-      <div class="op-row ${isRight ? 'right' : ''}">
+      <div class="op-row ${isRight?'right':''}">
         ${avatarHTML(scene.character)}
-        <div class="op-col ${isRight ? 'right' : ''}">
-          <div class="op-name" style="color:${ch.color || '#E8A020'};text-align:${isRight?'right':'left'}">${ch.name || ''}</div>
-          <div class="op-bubble ${isRight ? 'right' : ''}">${(scene.text||'').replace(/\n/g,'<br>')}</div>
+        <div class="op-col ${isRight?'right':''}">
+          ${nameEl}
+          <div class="op-bubble ${isRight?'right':''}">${(scene.text||'').replace(/\n/g,'<br>')}</div>
         </div>
       </div>`;
-
     setTimeout(() => { dialogEl.classList.add('show'); isAnimating = false; }, 60);
   }
 
   function showChoice(scene) {
+    revealEl.style.display = 'none';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     tapHint.style.display = 'none';
@@ -281,6 +387,82 @@
     });
   }
 
+  // 花火アニメ
+  function showFireworks(scene) {
+    isAnimating = true;
+    revealEl.style.display = 'none';
+    narText.classList.remove('show');
+    dialogEl.classList.remove('show');
+    choicesEl.style.display = 'none';
+    tapHint.style.display = 'block';
+
+    // ナレーションテキスト表示
+    setTimeout(() => { narText.textContent = scene.text || ''; narText.classList.add('show'); }, 200);
+
+    // 花火を複数回打ち上げ
+    const colors = ['#FFD700','#FF6B6B','#6BFFE0','#FF9FFF','#FFFFFF','#FFB347'];
+    const positions = [
+      {x:20,y:75},{x:50,y:65},{x:80,y:70},{x:35,y:80},{x:65,y:72}
+    ];
+    positions.forEach((pos, pi) => {
+      const delay = pi * 600;
+      setTimeout(() => launchFirework(pos.x, pos.y, colors[pi % colors.length]), delay);
+    });
+    // 2周目
+    setTimeout(() => {
+      [{x:30,y:68},{x:60,y:75},{x:75,y:65}].forEach((pos, pi) => {
+        setTimeout(() => launchFirework(pos.x, pos.y, colors[(pi+2) % colors.length]), pi * 500);
+      });
+    }, 3200);
+
+    setTimeout(() => { isAnimating = false; }, 1500);
+  }
+
+  function launchFirework(xPct, yFromBottom, color) {
+    const burstY = `${yFromBottom}%`;
+    const burstX = `${xPct}%`;
+    // 破裂パーティクル
+    const chars = ['✦','★','✶','·','●','◆'];
+    const count = 10 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < count; i++) {
+      const angle = (360 / count) * i;
+      const rad   = angle * Math.PI / 180;
+      const dist  = 28 + Math.random() * 20;
+      const bx    = Math.cos(rad) * dist;
+      const by    = Math.sin(rad) * dist;
+      const el = document.createElement('div');
+      el.className = 'op-firework-burst';
+      el.style.cssText = `
+        left:${xPct}%; top:calc(100% - ${burstY});
+        --bx:${bx}px; --by:${by}px;
+        --bdur:${0.5 + Math.random()*0.4}s;
+        --bdly:${Math.random()*0.15}s;
+        --bsz:${8 + Math.random()*8}px;
+        --bcl:${color};
+        --char:'${chars[i%chars.length]}';
+      `;
+      overlay.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    // 中心フラッシュ
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+      position:absolute; left:${xPct}%; top:calc(100% - ${burstY});
+      width:20px; height:20px; border-radius:50%;
+      background:${color}; opacity:0.9;
+      transform:translate(-50%,-50%) scale(1);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events:none; z-index:3;
+      box-shadow: 0 0 20px 8px ${color};
+    `;
+    overlay.appendChild(flash);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      flash.style.transform = 'translate(-50%,-50%) scale(3)';
+      flash.style.opacity = '0';
+    }));
+    setTimeout(() => flash.remove(), 400);
+  }
+
   function renderScene() {
     if (sceneIndex >= currentScenes.length) {
       narText.classList.remove('show');
@@ -294,30 +476,43 @@
     const scene = currentScenes[sceneIndex];
     if (scene.bg) setBg(scene.bg);
 
-    if (scene.type === 'narration')    showNarration(scene);
-    else if (scene.type === 'dialog')  showDialog(scene);
-    else if (scene.type === 'choice')  showChoice(scene);
+    if      (scene.type === 'reveal')    showReveal(scene);
+    else if (scene.type === 'narration') showNarration(scene);
+    else if (scene.type === 'dialog')    showDialog(scene);
+    else if (scene.type === 'choice')    showChoice(scene);
+    else if (scene.type === 'fireworks') showFireworks(scene);
   }
 
   // タップで次へ
-  overlay.addEventListener('click', function(e) {
+  overlay.addEventListener('click', function (e) {
     if (e.target.closest('.op-choice-btn') || e.target === startBtn) return;
     if (isAnimating) return;
     const scene = currentScenes[sceneIndex];
     if (scene && scene.type === 'choice') return;
+    if (scene && scene.type === 'reveal') {
+      // reveal → フェードアウトして次へ
+      isAnimating = true;
+      revealEl.classList.add('fade-out');
+      setTimeout(() => {
+        revealEl.style.display = 'none';
+        revealEl.classList.remove('fade-out');
+        tapHint.style.display = 'block';
+        sceneIndex++;
+        isAnimating = false;
+        renderScene();
+      }, 1200);
+      return;
+    }
     sceneIndex = (scene && scene.next !== undefined) ? scene.next : sceneIndex + 1;
     spawnParticles();
     renderScene();
   });
 
   // スタートボタン
-  startBtn.addEventListener('click', function() {
+  startBtn.addEventListener('click', function () {
     overlay.style.transition = 'opacity 0.5s ease';
     overlay.style.opacity = '0';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-      if (onComplete) onComplete();
-    }, 500);
+    setTimeout(() => { overlay.style.display = 'none'; if (onComplete) onComplete(); }, 500);
   });
 
   // パーティクル
@@ -326,7 +521,7 @@
     for (let i = 0; i < 6; i++) {
       const el = document.createElement('span');
       el.className = 'op-ptcl';
-      el.textContent = PTCL[Math.floor(Math.random()*PTCL.length)];
+      el.textContent = PTCL[Math.floor(Math.random() * PTCL.length)];
       el.style.cssText = `left:${10+Math.random()*80}%;top:${20+Math.random()*60}%;
         --sz:${8+Math.random()*12}px;
         --cl:${['rgba(255,215,0,0.7)','rgba(255,255,255,0.6)','rgba(255,200,80,0.6)'][i%3]};
@@ -336,15 +531,16 @@
     }
   }
 
-  // ── 公開API ──────────────────────────────────────────────
-  window.playOpening = function(scenes, startText, callback) {
+  // ── 公開API ─────────────────────────────────────────────────
+  window.playOpening = function (scenes, startText, callback) {
     currentScenes       = scenes;
     currentStartBtnText = startText || '次へ ✦';
     onComplete          = callback || null;
     sceneIndex          = 0;
     isAnimating         = false;
 
-    bg.classList.remove('show');
+    bgEl.classList.remove('show');
+    bgEl.style.backgroundImage = '';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     dialogEl.innerHTML = '';
@@ -352,9 +548,10 @@
     choicesEl.innerHTML = '';
     tapHint.style.display = 'block';
     startBtn.classList.remove('show');
-    overlay.style.opacity = '1';
+    revealEl.style.display  = 'none';
+    overlay.style.opacity   = '1';
     overlay.style.transition = '';
-    overlay.style.display = 'flex';
+    overlay.style.display   = 'flex';
 
     setTimeout(renderScene, 300);
   };
