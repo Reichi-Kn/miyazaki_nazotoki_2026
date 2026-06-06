@@ -1,3 +1,7 @@
+// Mission1クリア後
+window.playMission1End = function(onDone) {
+  playOpening(STORY.mission1end, STORY.mission1endButtonText || '次のミッションへ ✦', onDone);
+};
 // ============================================================
 //  mission2end.js  ―  Mission2後・エンディング演出（触らなくてOK）
 //  セリフ変更は story.js を編集してね
