@@ -426,7 +426,12 @@
             <div class="op-bubble ${isRight?'right':''}">${(scene.text||'').replace(/\n/g,'<br>')}</div>
           </div>
         </div>`;
-      setTimeout(() => { dialogEl.classList.add('show'); isAnimating = false; }, 60);
+      setTimeout(() => {
+        dialogEl.classList.add('show');
+        // tapLockMs が指定されていればその分だけ追加でタップをブロック
+        const lockMs = scene.tapLockMs || 0;
+        setTimeout(() => { isAnimating = false; }, lockMs);
+      }, 60);
     };
     if (scene.delayMs && scene.delayMs > 0) {
       setTimeout(doShow, scene.delayMs);
