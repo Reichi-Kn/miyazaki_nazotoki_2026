@@ -810,13 +810,37 @@
   ];
 
   // マンゴー発見時に通常モーダルで表示するデータ
+  // エンディングアニメ後に表示する最終メッセージ
+  const MANGO_FINAL_MSG = {
+    icon: '🥭',
+    title: '黄金のマンゴー発見！！',
+    titleClass: '',
+    comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
+    image: 'ougonnomango.png',
+    onClose: () => updateUI()
+  };
+
+  // クリア済みタップ時に見るマンゴーモーダル（アニメ→メッセージ）
   const MANGO_MODAL_DATA = {
     icon: '🥭',
     title: '黄金のマンゴー発見！！',
     titleClass: '',
     comment: '3周年おめでとう！！\n素敵な旅になったね🧡\nこれからもずっと一緒にいようね✨',
     image: 'ougonnomango.png',
-    onClose: () => { if (!state.endingDone) { state.endingDone = true; saveState(state); setTimeout(() => playEnding(() => updateUI()), 200); } }
+    onClose: () => {
+      if (!state.endingDone) {
+        state.endingDone = true;
+        saveState(state);
+        setTimeout(() => playEnding(() => {
+          showModal(MANGO_FINAL_MSG);
+        }), 200);
+      } else {
+        // 2回目以降はアニメ→メッセージ
+        setTimeout(() => playEnding(() => {
+          showModal(MANGO_FINAL_MSG);
+        }), 200);
+      }
+    }
   };
 
   // ── モード管理（本番 / 開発） ──
@@ -942,6 +966,26 @@
     section.style.display = 'block';
     list.innerHTML = '';
 
+    // プロローグをリストの先頭に追加
+    if (state.openingDone) {
+      const prologueItem = document.createElement('div');
+      prologueItem.className = 'history-item';
+      prologueItem.style.cursor = 'pointer';
+      prologueItem.addEventListener('click', () => {
+        setTimeout(() => playOpening(STORY.opening, STORY.startButtonText, () => updateUI()), 200);
+      });
+      prologueItem.innerHTML = `
+        <div class="history-item-header">
+          <div class="history-item-left">
+            <div class="history-badge" style="background:linear-gradient(135deg,#4a3000,#8B6500);">🌟</div>
+            <div class="history-mission-name">プロローグ</div>
+          </div>
+          <span style="font-size:13px;color:rgba(122,90,32,0.5);">タップで見る ›</span>
+        </div>
+      `;
+      list.insertBefore(prologueItem, list.firstChild);
+    }
+
     items.forEach(qId => {
       const q = QUIZZES.find(x => x.id === qId);
       if (!q) return;
@@ -998,8 +1042,22 @@
     }
   }
 
+  // アニメーション関数マップ（id→関数）
+  const MISSION_ANIM = {
+    0: (cb) => playOpening(STORY.opening, STORY.startButtonText, cb),
+    1: (cb) => playMission1End(cb),
+    2: (cb) => playMission2End(cb),
+    3: (cb) => playMission3End(cb),
+    4: (cb) => playMission4End(cb),
+  };
+
   function reopenModal(q) {
-    showModal({ icon: '○', title: '正解！！', titleClass: '', comment: q.comment, image: q.image, onClose: null });
+    const animFn = MISSION_ANIM[q.id];
+    showModal({
+      icon: '○', title: '正解！！', titleClass: '',
+      comment: q.comment, image: q.image,
+      onClose: animFn ? () => setTimeout(() => animFn(() => updateUI()), 200) : null
+    });
   }
 
   const SECRET_CODE = 'hanabi8540';
