@@ -62,6 +62,34 @@
     opacity: 0;
   }
 
+  .dev-btn {
+    background: rgba(255,80,80,0.08);
+    border: 1px solid rgba(255,80,80,0.25);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: rgba(160,50,50,0.85);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dev-btn:active { opacity: 0.7; }
+  .dev-btn-red {
+    background: rgba(255,50,50,0.12);
+    border-color: rgba(255,50,50,0.35);
+    color: rgba(180,30,30,0.9);
+  }
+  .dev-btn-gold {
+    background: rgba(200,130,0,0.1);
+    border-color: rgba(200,130,0,0.3);
+    color: rgba(140,90,0,0.9);
+  }
+  .dev-btn-blue {
+    background: rgba(60,80,200,0.08);
+    border-color: rgba(60,80,200,0.25);
+    color: rgba(50,60,180,0.85);
+  }
+
   @keyframes twinkle {
     0%, 100% { opacity: 0; transform: scale(0.5); }
     50% { opacity: var(--o, 0.4); transform: scale(1); }
@@ -704,11 +732,33 @@
   </div>
 
   <div class="dev-panel" id="dev-panel" style="display:none;">
-    <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'" style="background:none;border:none;font-size:11px;color:rgba(200,80,80,0.4);letter-spacing:0.15em;cursor:pointer;width:100%;">🛠️ 開発用</button>
-    <div style="display:none;flex-direction:column;gap:8px;margin-top:10px;">
-      <button onclick="devReset()" style="background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:10px;padding:10px 20px;color:rgba(180,60,60,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">Mission 3 までクリア状態にリセット</button>
-      <button onclick="devResetAll()" style="background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:10px;padding:10px 20px;color:rgba(180,60,60,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">はじめにもどる</button>
-      <button onclick="goToPasswordScreen()" style="background:rgba(80,80,255,0.08);border:1px solid rgba(80,80,255,0.25);border-radius:10px;padding:10px 20px;color:rgba(60,60,180,0.9);font-family:'Zen Maru Gothic',sans-serif;font-size:13px;cursor:pointer;">🔐 パスワード画面にもどる</button>
+    <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="background:none;border:none;font-size:11px;color:rgba(200,80,80,0.4);letter-spacing:0.15em;cursor:pointer;width:100%;">🛠️ 開発用パネル</button>
+    <div style="display:none;margin-top:10px;">
+
+      <div style="font-size:10px;color:rgba(180,60,60,0.5);letter-spacing:0.1em;margin-bottom:6px;">── 状態セット ──</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+        <button onclick="devSetState(0)"  class="dev-btn">🌟 プロローグ直後</button>
+        <button onclick="devSetState(1)"  class="dev-btn">M1クリア後</button>
+        <button onclick="devSetState(2)"  class="dev-btn">M2クリア後</button>
+        <button onclick="devSetState(3)"  class="dev-btn">M3クリア後</button>
+        <button onclick="devSetState(4)"  class="dev-btn">M4クリア後</button>
+        <button onclick="devSetState(99)" class="dev-btn dev-btn-gold">🥭 全クリ</button>
+        <button onclick="devResetAll()"   class="dev-btn dev-btn-red">🔄 はじめから</button>
+      </div>
+
+      <div style="font-size:10px;color:rgba(180,60,60,0.5);letter-spacing:0.1em;margin-bottom:6px;">── アニメ確認 ──</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+        <button onclick="devPlayAnim('opening')"   class="dev-btn">🌴 オープニング</button>
+        <button onclick="devPlayAnim('mission1')"  class="dev-btn">M1エンド</button>
+        <button onclick="devPlayAnim('mission2')"  class="dev-btn">M2エンド</button>
+        <button onclick="devPlayAnim('mission3')"  class="dev-btn">M3花火</button>
+        <button onclick="devPlayAnim('mission4')"  class="dev-btn">M4地図</button>
+        <button onclick="devPlayAnim('ending')"    class="dev-btn dev-btn-gold">🥭 エンディング</button>
+      </div>
+
+      <div style="display:flex;gap:6px;">
+        <button onclick="goToPasswordScreen()" class="dev-btn dev-btn-blue" style="flex:1;">🔐 パスワード画面へ</button>
+      </div>
     </div>
   </div>
 
@@ -959,7 +1009,7 @@
     const items = [...state.cleared];
     const showMangoHistory = state.mapUsed;
 
-    if (items.length === 0 && !showMangoHistory) {
+    if (items.length === 0 && !showMangoHistory && !state.openingDone) {
       section.style.display = 'none';
       return;
     }
@@ -1412,8 +1462,29 @@
     if (e.key === 'Enter') submitAnswer();
   });
 
-  function devReset() {
-    state = { cleared: [1, 2, 3] };
+  // 開発用：状態を任意のミッション直後にセット
+  function devSetState(missionId) {
+    const cleared = [];
+    const flags = {};
+    if (missionId >= 1) { cleared.push(1); flags.mission1endDone = true; flags.openingDone = true; }
+    if (missionId >= 2) { cleared.push(2); flags.mission2endDone = true; }
+    if (missionId >= 3) { cleared.push(3); flags.mission3endDone = true; }
+    if (missionId >= 4) { cleared.push(4); flags.mission4endDone = true; }
+    if (missionId === 99) {
+      cleared.push(1,2,3,4);
+      flags.mission1endDone = true;
+      flags.mission2endDone = true;
+      flags.mission3endDone = true;
+      flags.mission4endDone = true;
+      flags.openingDone = true;
+      flags.mapUsed = true;
+      flags.qrUnlocked = true;
+      flags.endingDone = true;
+    }
+    if (missionId === 0) {
+      flags.openingDone = true;
+    }
+    state = { cleared, ...flags };
     saveState(state);
     updateUI();
   }
@@ -1424,12 +1495,17 @@
     updateUI();
   }
 
-  // 開発用：オープニングを再度見る
-  function devReplayOpening() {
-    playOpening(STORY.opening, STORY.startButtonText, () => { updateUI(); });
-  }
-  function devReplayMission2() {
-    playMission2End(() => { updateUI(); });
+  // 開発用：アニメ確認
+  function devPlayAnim(key) {
+    const map = {
+      opening:  () => playOpening(STORY.opening, STORY.startButtonText, () => updateUI()),
+      mission1: () => playMission1End(() => updateUI()),
+      mission2: () => playMission2End(() => updateUI()),
+      mission3: () => playMission3End(() => updateUI()),
+      mission4: () => playMission4End(() => updateUI()),
+      ending:   () => playEnding(() => showModal(MANGO_FINAL_MSG)),
+    };
+    if (map[key]) map[key]();
   }
 
   function goToPasswordScreen() {
@@ -1464,7 +1540,7 @@
             () => {
               state.openingDone = true;
               saveState(state);
-              updateUI();
+              updateUI();   // ← ここで履歴に「プロローグ」が即時追加される
               applyDevMode();
             }
           );
