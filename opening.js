@@ -40,47 +40,97 @@
     #op-reveal {
       position: absolute; inset: 0; z-index: 5;
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 16px;
+      flex-direction: column; gap: 20px;
       background: #000;
-      opacity: 1; transition: opacity 1.2s ease;
+      opacity: 1; transition: opacity 1.5s ease;
       pointer-events: none;
     }
     #op-reveal.fade-out { opacity: 0; }
-    #op-reveal-glow {
-      width: 130px; height: 130px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,230,80,0.0) 30%, transparent 70%);
+
+    /* 放射光（背面） */
+    #op-reveal-rays {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center,
+        rgba(255,220,60,0) 0%,
+        rgba(255,200,40,0) 30%,
+        transparent 70%);
+      opacity: 0;
+      transition: opacity 2.5s ease, background 2.5s ease;
+    }
+    #op-reveal-rays.lit {
+      opacity: 1;
+      background: radial-gradient(ellipse at center,
+        rgba(255,240,100,0.45) 0%,
+        rgba(255,200,40,0.25) 35%,
+        rgba(255,150,0,0.08) 60%,
+        transparent 75%);
+      animation: opRaysPulse 3s ease-in-out infinite;
+    }
+    @keyframes opRaysPulse {
+      0%,100% { opacity: 0.85; transform: scale(1); }
+      50%      { opacity: 1;    transform: scale(1.06); }
+    }
+
+    /* 光の筋（放射線） */
+    #op-reveal-streaks {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 2s ease 0.8s;
+      pointer-events: none;
+    }
+    #op-reveal-streaks.lit { opacity: 1; }
+    .op-streak {
       position: absolute;
-      transition: background 1.5s ease;
+      top: 50%; left: 50%;
+      width: 2px; height: 0;
+      background: linear-gradient(to top, rgba(255,230,80,0.5), transparent);
+      transform-origin: bottom center;
+      transition: height 1.8s ease var(--sd,0s);
     }
-    #op-reveal-glow.lit {
-      background: radial-gradient(circle, rgba(255,230,80,0.55) 20%, rgba(255,180,0,0.15) 60%, transparent 80%);
-      box-shadow: 0 0 60px 30px rgba(255,200,0,0.25);
-    }
+    .op-streak.grow { height: var(--sh, 180px); }
+
+    /* 画像（丸枠なし・そのまま大きく） */
     #op-reveal-avatar {
-      width: 120px; height: 120px; border-radius: 50%;
-      border: 3px solid rgba(255,215,0,0.0);
-      overflow: hidden;
+      width: min(62vw, 260px);
+      height: min(62vw, 260px);
       display: flex; align-items: center; justify-content: center;
-      font-size: 56px;
-      background: rgba(196,125,14,0.0);
-      opacity: 0; transform: scale(0.6);
-      transition: opacity 1.4s ease, transform 1.4s ease, border-color 1.4s ease, background 1.4s ease;
-      position: relative; z-index: 1;
+      font-size: 72px;
+      opacity: 0;
+      transform: scale(0.55) translateY(20px);
+      transition: opacity 2s ease, transform 2s ease;
+      position: relative; z-index: 2;
+      filter: drop-shadow(0 0 0px rgba(255,215,0,0));
     }
     #op-reveal-avatar.show {
-      opacity: 1; transform: scale(1);
-      border-color: rgba(255,215,0,0.6);
-      background: rgba(196,125,14,0.15);
+      opacity: 1; transform: scale(1) translateY(0);
+      filter: drop-shadow(0 0 28px rgba(255,215,0,0.6))
+              drop-shadow(0 0 60px rgba(255,180,0,0.3));
     }
-    #op-reveal-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    #op-reveal-avatar img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
     #op-reveal-tap {
       font-size: 11px; color: rgba(255,248,220,0.4);
-      letter-spacing: 0.2em; margin-top: 8px;
+      letter-spacing: 0.2em;
       animation: opTapPulse 2s ease-in-out infinite;
-      position: relative; z-index: 1;
-      opacity: 0; transition: opacity 1s ease 1.8s;
+      position: relative; z-index: 2;
+      opacity: 0; transition: opacity 1s ease;
     }
     #op-reveal-tap.show { opacity: 1; }
+
+    /* 光粒子 */
+    .op-reveal-spark {
+      position: absolute; pointer-events: none; z-index: 3;
+      border-radius: 50%;
+      background: var(--sc, rgba(255,230,80,0.9));
+      width: var(--sw,4px); height: var(--sw,4px);
+      opacity: 0;
+      animation: opSparkFly var(--sd2,2s) ease-out forwards var(--sdy,0s);
+    }
+    @keyframes opSparkFly {
+      0%   { opacity:0.9; transform:translate(0,0) scale(1); }
+      100% { opacity:0; transform:translate(var(--stx,0px),var(--sty,-120px)) scale(0.2); }
+    }
 
     /* ── ナレーション ──────────────────── */
     #op-narration {
@@ -252,7 +302,8 @@
       <div id="op-bg"></div>
       <div id="op-dim"></div>
       <div id="op-reveal">
-        <div id="op-reveal-glow"></div>
+        <div id="op-reveal-rays"></div>
+        <div id="op-reveal-streaks"></div>
         <div id="op-reveal-avatar"></div>
         <div id="op-reveal-tap">タップして続ける</div>
       </div>
@@ -270,8 +321,9 @@
 
   const overlay   = document.getElementById('op-overlay');
   const bgEl      = document.getElementById('op-bg');
-  const revealEl  = document.getElementById('op-reveal');
-  const revealGlow   = document.getElementById('op-reveal-glow');
+  const revealEl     = document.getElementById('op-reveal');
+  const revealRays   = document.getElementById('op-reveal-rays');
+  const revealStreaks= document.getElementById('op-reveal-streaks');
   const revealAvatar = document.getElementById('op-reveal-avatar');
   const revealTapEl  = document.getElementById('op-reveal-tap');
   const narText   = document.getElementById('op-narration-text');
@@ -297,40 +349,88 @@
     </div>`;
   }
 
-  // reveal演出（神様登場）
+  // reveal演出（神様登場・強化版）
   function showReveal(scene) {
     isAnimating = true;
-    revealTapped = false;
     const ch = STORY.characters[scene.character] || {};
 
-    // 画面リセット
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     choicesEl.style.display = 'none';
     tapHint.style.display = 'none';
 
-    // reveal層を真っ暗で表示
+    // リセット
     revealEl.style.display = 'flex';
     revealEl.style.opacity = '1';
     revealEl.classList.remove('fade-out');
-    revealGlow.classList.remove('lit');
+    revealRays.classList.remove('lit');
+    revealStreaks.classList.remove('lit');
     revealAvatar.classList.remove('show');
     revealTapEl.classList.remove('show');
+    revealStreaks.innerHTML = '';
 
-    // アバターセット
+    // 光の筋を生成
+    const streakCount = 12;
+    for (let i = 0; i < streakCount; i++) {
+      const angle = (360 / streakCount) * i;
+      const len   = 100 + Math.random() * 140;
+      const s = document.createElement('div');
+      s.className = 'op-streak';
+      s.style.cssText = `
+        transform: rotate(${angle}deg) translateX(-50%);
+        --sh:${len}px; --sd:${0.3 + Math.random()*0.6}s;
+      `;
+      revealStreaks.appendChild(s);
+    }
+
+    // 画像セット（丸枠なし・そのまま）
     revealAvatar.innerHTML = ch.avatar
-      ? `<img src="${ch.avatar}" alt="${ch.name}" onerror="this.parentNode.innerHTML='${ch.emoji||'✨'}'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      ? `<img src="${ch.avatar}" alt="${ch.name}"
+           onerror="this.parentNode.innerHTML='${ch.emoji||'✨'}'"
+           style="width:100%;height:100%;object-fit:contain;">`
       : (ch.emoji || '✨');
 
-    // 少し待ってからフワッと光る
+    // ステップ1: 1.2秒後に光が広がり始める
     setTimeout(() => {
-      revealGlow.classList.add('lit');
+      revealRays.classList.add('lit');
+      // 光の筋を伸ばす
+      revealStreaks.classList.add('lit');
+      revealStreaks.querySelectorAll('.op-streak').forEach(s => s.classList.add('grow'));
+    }, 1200);
+
+    // ステップ2: 2.2秒後に神様登場
+    setTimeout(() => {
       revealAvatar.classList.add('show');
-    }, 400);
+      spawnRevealSparks();
+    }, 2200);
+
+    // ステップ3: 3.8秒後にタップヒント
     setTimeout(() => {
       revealTapEl.classList.add('show');
       isAnimating = false;
-    }, 2000);
+    }, 3800);
+  }
+
+  // 登場時の光粒子
+  function spawnRevealSparks() {
+    const colors = ['rgba(255,230,80,0.9)','rgba(255,255,200,0.8)','rgba(255,180,40,0.7)'];
+    for (let i = 0; i < 18; i++) {
+      const angle = Math.random() * 360;
+      const dist  = 40 + Math.random() * 100;
+      const el = document.createElement('div');
+      el.className = 'op-reveal-spark';
+      el.style.cssText = `
+        left: 50%; top: 42%;
+        --sc: ${colors[i%colors.length]};
+        --sw: ${3 + Math.random()*4}px;
+        --stx: ${Math.cos(angle*Math.PI/180)*dist}px;
+        --sty: ${Math.sin(angle*Math.PI/180)*dist - 60}px;
+        --sd2: ${0.8 + Math.random()*1}s;
+        --sdy: ${Math.random()*0.3}s;
+      `;
+      revealEl.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    }
   }
 
   function showNarration(scene) {
