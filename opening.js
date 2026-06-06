@@ -137,10 +137,11 @@
     #op-dialog {
       position: relative; z-index: 3;
       width: 100%; max-width: 480px;
-      padding: 0 14px 16px;
+      padding: 0 14px 52px;
       display: flex; flex-direction: column; gap: 6px;
       opacity: 0; transform: translateY(16px);
       transition: opacity 0.45s ease, transform 0.45s ease;
+      margin-bottom: 0;
     }
     #op-dialog.show { opacity: 1; transform: translateY(0); }
 
@@ -209,8 +210,8 @@
 
     /* ── タップヒント ──────────────────── */
     #op-tap-hint {
-      position: absolute; bottom: 8px; right: 16px;
-      font-size: 10px; color: rgba(255,248,220,0.45);
+      position: absolute; bottom: 14px; right: 16px;
+      font-size: 10px; color: rgba(255,248,220,0.55);
       letter-spacing: 0.15em; z-index: 4;
       animation: opTapPulse 2s ease-in-out infinite;
     }
@@ -435,25 +436,32 @@
   }
 
   function showChoice(scene) {
+    isAnimating = true;
     revealEl.style.display = 'none';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     tapHint.style.display = 'none';
-    choicesEl.style.display = 'flex';
+    choicesEl.style.display = 'none';
     choicesEl.innerHTML = '';
-    scene.choices.forEach(c => {
-      const btn = document.createElement('button');
-      btn.className = 'op-choice-btn';
-      btn.textContent = c.label;
-      btn.addEventListener('click', () => {
-        spawnParticles();
-        sceneIndex = c.next;
-        choicesEl.style.display = 'none';
-        isAnimating = false;
-        setTimeout(renderScene, 180);
+
+    // ダイアログのフェードアウト（0.45s）が終わってから選択肢を表示
+    setTimeout(() => {
+      scene.choices.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'op-choice-btn';
+        btn.textContent = c.label;
+        btn.addEventListener('click', () => {
+          spawnParticles();
+          sceneIndex = c.next;
+          choicesEl.style.display = 'none';
+          isAnimating = false;
+          setTimeout(renderScene, 180);
+        });
+        choicesEl.appendChild(btn);
       });
-      choicesEl.appendChild(btn);
-    });
+      choicesEl.style.display = 'flex';
+      isAnimating = false;
+    }, 480);
   }
 
   // 花火アニメ
