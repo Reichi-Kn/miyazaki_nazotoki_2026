@@ -48,7 +48,7 @@ const STORY = {
     {
       type: 'narration',
       bg:   'bg_miyazaki.jpg',
-      text: '🌴  伝説の黄金のマンゴーが眠る地\n　　　　　　　― 宮 崎 ―',
+      text: '🌴　伝説の黄金のマンゴーが眠る地　🌴\n　　　　　　　―in  宮 崎 ―',
     },
     // シーン1: 神様が光とともに登場（真っ暗→フワッ）
     {
@@ -64,53 +64,94 @@ const STORY = {
       side:      'left',
       text:      'ずっと待っておったぞ……\nようやく来たか。',
     },
-    // シーン3: 選択肢（どちらも名前を聞く流れ）
+    // シーン3: 第1の選択肢
     {
       type: 'choice',
       bg:   'bg_cave.jpg',
       choices: [
-        { label: 'あなたは誰ですか？',    next: 4 },
-        { label: 'だれ……？🤔',           next: 5 },
+        { label: 'なんで名前をしってるの？', next: 4 },
+        { label: 'だれ……？',                next: 5 },
       ],
     },
-    // シーン4: 「あなたは誰」ルート → 神様と名乗る
+    // シーン4: 「なんで名前を」ルート → 神様と名乗る
     {
-      type:      'dialog',
-      bg:        'bg_cave.jpg',
-      character: 'kamisama',   // ← ここで名前が神様に変わる
-      side:      'left',
-      revealName: true,        // エンジン側でアニメONにするフラグ
-      text:      'わしか……宮崎に宿る神様じゃ🌟\n黄金のマンゴーへ導く者よ。',
-      next:      6,
+      type:       'dialog',
+      bg:         'bg_cave.jpg',
+      character:  'kamisama',
+      side:       'left',
+      revealName: true,
+      text:       'それは、わしが神様だからじゃよ🌟\n宮崎の地をずっと守っておるのじゃ。',
+      next:       6,
     },
     // シーン5: 「だれ」ルート → 神様と名乗る
     {
-      type:      'dialog',
-      bg:        'bg_cave.jpg',
-      character: 'kamisama',
-      side:      'left',
+      type:       'dialog',
+      bg:         'bg_cave.jpg',
+      character:  'kamisama',
+      side:       'left',
       revealName: true,
-      text:      'ふふ……わしは神様じゃよ🌟\n宮崎の地に宿る者じゃ。',
-      next:      6,
+      text:       'わしか……宮崎に宿る神様じゃよ🌟\nこの地をずっとまもっておるのじゃ。',
+      next:       6,
     },
-    // シーン6: 合流・本題へ
+    // シーン6: 合流・マンゴーの話へ
     {
       type:      'dialog',
       bg:        'bg_cave.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      '黄金のマンゴーを手に入れたくば\n謎を解くしかないぞ。',
+      text:      'おぬしには、黄金のマンゴーをさがしてほしいのじゃ。',
     },
+    // シーン7: 第2の選択肢
+    {
+      type: 'choice',
+      bg:   'bg_cave.jpg',
+      choices: [
+        { label: '黄金のマンゴーって？', next: 8 },
+      ],
+    },
+    // シーン8: マンゴーの説明1
     {
       type:      'dialog',
-      bg:        'bg_jungle.jpg',
+      bg:        'bg_cave.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'さあ……冒険のはじまりじゃ！\n3周年の旅を楽しんでおくれ🥭✨',
+      text:      '黄金のマンゴーは宮崎の地にねむるお宝じゃ。',
+    },
+    // シーン9: マンゴーの説明2
+    {
+      type:      'dialog',
+      bg:        'bg_cave.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'これを持つ者には幸運がおとずれると言われておる。',
+    },
+    // シーン10: 第3の選択肢
+    {
+      type: 'choice',
+      bg:   'bg_cave.jpg',
+      choices: [
+        { label: 'えっ！ほしい！', next: 11 },
+      ],
+    },
+    // シーン11: よい返事
+    {
+      type:      'dialog',
+      bg:        'bg_cave.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'よい返事じゃ！\n黄金のマンゴーを手に入れるには、謎を解くしかないぞ。',
+    },
+    // シーン12: 冒険スタート
+    {
+      type:      'dialog',
+      bg:        'bg_cave.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'さあ……冒険のはじまりじゃ！\n謎解きの旅を楽しんでおくれ🥭✨',
     },
   ],
 
-  startButtonText: '冒険をはじめる ✦',
+  startButtonText: '✦冒険をはじめる ✦',
 
   // ----------------------------------------------------------
   //  Mission1クリア後
@@ -139,7 +180,7 @@ const STORY = {
     },
   ],
 
-  mission1endButtonText: '次のミッションへ ✦',
+  mission1endButtonText: '✦次のミッションへ ✦',
 
   // ----------------------------------------------------------
   //  Mission2クリア後・たーくん登場
@@ -155,64 +196,106 @@ const STORY = {
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
+      character: 'mystery',
+      side:      'right',
+      text:      'お～い！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'あ！たーくん！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
       character: 'takun',
       side:      'right',
-      text:      'おれも来たぞ〜！！🔥\nあーちゃん、置いていくなよ！',
+      text:      'あーちゃん、置いていかないでよ！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'たーくんが遅いんでしょ！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      '……',
     },
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'ほほ……仲間が現れたようじゃ。\nこれで旅はより心強くなったな。',
+      text:      'ほほ……おぬしがたーくんか。\n３年記念日で宮崎に来てるんじゃったのぉ。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      '神様ってなんでも知ってるんだね。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'すごいじゃろ。\n２人で探せばきっと黄金のマンゴーもみつかるぞい。',
     },
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
       character: 'takun',
       side:      'right',
-      text:      '一緒にマンゴー探そうぜ！💪\n絶対見つけてみせる！',
+      text:      '一緒に黄金のマンゴー探そうぜ！\n絶対見つけてみせる！',
     },
   ],
 
-  mission2endButtonText: '次のミッションへ ✦',
+  mission2endButtonText: '✦次のミッションへ ✦',
 
   // ----------------------------------------------------------
   //  Mission3クリア後・花火アニメ（夜景背景＋花火CSS）
   // ----------------------------------------------------------
   mission3end: [
     {
-      type:      'fireworks',   // ← 花火打ち上げ特殊演出
+      type:      'fireworks',
       bg:        'bg_night.jpg',
-      text:      '🎆  花火……きれいだなぁ……',
+      text:      '花火……きれいだなぁ……',
     },
     {
       type:      'dialog',
       bg:        'bg_night.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      'わぁ〜！！花火きれい〜〜！！🎆✨\nすごいすごい！！',
+      text:      'わぁ〜！！花火きれい〜〜！！✨\nすごいすごい！！',
     },
     {
       type:      'dialog',
       bg:        'bg_night.jpg',
       character: 'takun',
       side:      'left',
-      text:      'ほんとだ……めちゃくちゃきれいじゃん🎇\nあーちゃんと見れてよかった〜',
+      text:      'ほんとだ……めちゃくちゃきれいじゃん！\nあーちゃんと見れてよかった〜',
     },
     {
       type:      'dialog',
       bg:        'bg_night.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      'ずっと見てたい……🥺💛',
+      text:      'ずっと見てたい……',
     },
     {
       type:      'dialog',
       bg:        'bg_night.jpg',
       character: 'takun',
       side:      'left',
-      text:      'あ！！！\nってか黄金のマンゴー探すの忘れてたーーー！！！😱',
+      text:      'あ！！！\nってか黄金のマンゴー探すの忘れてたーーー！！！',
     },
     {
       type:      'dialog',
@@ -223,7 +306,7 @@ const STORY = {
     },
   ],
 
-  mission3endButtonText: '急いで探しに行く！ 🥭',
+  mission3endButtonText: '✦急いで探しに行く✦',
 
   // ----------------------------------------------------------
   //  Mission4クリア後・みらいちずアニメ（3人）
@@ -232,7 +315,7 @@ const STORY = {
     {
       type: 'narration',
       bg:   'bg_jungle.jpg',
-      text: '🗺️  みらいちずを手に入れた……！',
+      text: 'みらいちずを手に入れた……！',
     },
     {
       type:      'dialog',
@@ -246,25 +329,25 @@ const STORY = {
       bg:        'bg_jungle.jpg',
       character: 'takun',
       side:      'right',
-      text:      'マジか！！じゃあもうすぐマンゴーゲットじゃん！！🔥',
+      text:      'マジか！！じゃあもうすぐマンゴーゲットじゃん！！',
     },
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      'やった〜！！地図使えばいいんだね！！🗺️💪',
+      text:      'やった〜！！地図使えばいいんだね！！',
     },
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'さあ……みらいちずを使うのじゃ。\n黄金のマンゴーはもうすぐそこじゃぞ🥭✨',
+      text:      'さあ……みらいちずを使うのじゃ。\n黄金のマンゴーはもうすぐそこじゃぞ✨',
     },
   ],
 
-  mission4endButtonText: 'みらいちずを使う！ 🗺️',
+  mission4endButtonText: '✦みらいちずを使おう✦',
 
   // ----------------------------------------------------------
   //  エンディング
@@ -273,28 +356,28 @@ const STORY = {
     {
       type: 'narration',
       bg:   'bg_miyazaki.jpg',
-      text: '🥭  ついに……黄金のマンゴーを手に入れた！',
+      text: 'ついに……黄金のマンゴーを手に入れた！',
     },
     {
       type:      'dialog',
       bg:        'bg_miyazaki.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'よくぞ辿り着いた……\n3年分の絆が、マンゴーを引き寄せたのじゃ。',
+      text:      'よくぞ辿り着いた……\nふたりの絆が、マンゴーを引き寄せたのじゃ。',
     },
     {
       type:      'dialog',
       bg:        'bg_miyazaki.jpg',
       character: 'takun',
       side:      'right',
-      text:      'あーちゃんすごすぎ！！🔥\n謎全部解いちゃったじゃん！',
+      text:      'あーちゃんすごすぎ！！\n謎全部解いちゃったじゃん！',
     },
     {
       type:      'dialog',
       bg:        'bg_miyazaki.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      'えへへ……やったー！！🌸💪',
+      text:      'えへへ……やったー！！',
     },
     {
       type:      'dialog',
@@ -308,9 +391,86 @@ const STORY = {
       bg:        'bg_miyazaki.jpg',
       character: 'takun',
       side:      'right',
-      text:      '3年間ありがとう！\nこれからもよろしく🧡',
+      text:      '3年間ありがとう！\nこれからもよろしくね！',
+    },
+    // シーン7: 少し間を置いてから（next指定なし＝自動で次へ）
+    {
+      type:      'dialog',
+      bg:        'bg_miyazaki.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'ふぅ......',
     },
   ],
 
-  endingButtonText: 'ありがとう ✦',
+  endingButtonText: '✦ Thank you ✦',
+  // ----------------------------------------------------------
+  //  パスワード入力後 → QRコード表示前のアニメーション
+  // ----------------------------------------------------------
+  qrPreAnim: [
+    {
+      type: 'narration',
+      bg:   'bg_jungle.jpg',
+      text: 'おや？黄金のマンゴーが......',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'おぉ！黄金のマンゴーの力で幸運がやってきたか！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      'なんだろう！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'わしにも何が起こるかまではわからんのじゃ。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'achan_guts',
+      side:      'right',
+      text:      '神様でもわからないことあるんだね。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'あーちゃん！\nじつは黄金のマンゴーにお願いしてプレゼントを用意したんだ！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'kamisama',
+      side:      'left',
+      text:      'ほぅ......いつの間にしておったのじゃ。',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'えへへ……',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'あーちゃんいつもありがとう！\nよろこんでくれるとうれしいな！',
+    },
+  ],
+
+  qrPreAnimButtonText: 'プレゼントをひらく ✦',
+
 };
