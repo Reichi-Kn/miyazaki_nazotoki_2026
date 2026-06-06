@@ -400,6 +400,7 @@ const STORY = {
       character: 'takun',
       side:      'right',
       text:      'ふぅ......',
+      delayMs:   2000,
     },
   ],
 
@@ -446,7 +447,14 @@ const STORY = {
       bg:        'bg_jungle.jpg',
       character: 'takun',
       side:      'right',
-      text:      'あーちゃん！\nじつは黄金のマンゴーにお願いしてプレゼントを用意したんだ！',
+      text:      'あーちゃん！',
+    },
+    {
+      type:      'dialog',
+      bg:        'bg_jungle.jpg',
+      character: 'takun',
+      side:      'right',
+      text:      'じつは黄金のマンゴーにお願いしてプレゼントを用意したんだ！',
     },
     {
       type:      'dialog',
