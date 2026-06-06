@@ -68,7 +68,7 @@ const STORY = {
       bg:        'bg_cave.jpg',
       character: 'mystery',
       side:      'left',
-      text:      'ずっと待っておったぞ、あーちゃん......',
+      text:      'ほっほっほ...やっと来たか\nずっと待っておったぞ、あーちゃん...',
     },
     // シーン3: 第1の選択肢
     {
@@ -76,7 +76,7 @@ const STORY = {
       bg:   'bg_cave.jpg',
       choices: [
         { label: 'なんで名前をしってるの？', next: 4 },
-        { label: 'だれ……？',                next: 5 },
+        { label: 'だーれ……？',                next: 5 },
       ],
     },
     // シーン4: 「なんで名前を」ルート → 神様と名乗る
@@ -168,7 +168,7 @@ const STORY = {
       bg:        'bg_miyazaki.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'ほほ……一つ目の謎を解けたようじゃな。\nさすがじゃ、あーちゃんよ🌟',
+      text:      'ほっほっほっ……一つ目の謎を解けたようじゃな。\nさすがじゃ、あーちゃんよ🌟',
     },
     {
       type:      'dialog',
@@ -246,14 +246,14 @@ const STORY = {
       bg:        'bg_jungle.jpg',
       character: 'achan_guts',
       side:      'right',
-      text:      '神様ってなんでも知ってるんだね。',
+      text:      'なんでも知ってるんだね。',
     },
     {
       type:      'dialog',
       bg:        'bg_jungle.jpg',
       character: 'kamisama',
       side:      'left',
-      text:      'すごいじゃろ。\n２人で探せばきっと黄金のマンゴーもみつかるぞい。',
+      text:      '神様じゃからのぅ\n２人で探せばきっと黄金のマンゴーもみつかるぞい。',
     },
     {
       type:      'dialog',
@@ -405,7 +405,7 @@ const STORY = {
       bg:        'bg_miyazaki.jpg',
       character: 'takun',
       side:      'right',
-      text:      'がざごぞ...',
+      text:      'がさごぞ...',
       delayMs:   2000,
     },
   ],
