@@ -1561,50 +1561,83 @@
     const ring    = document.getElementById('present-glow-ring');
     const hint    = document.getElementById('present-tap-hint');
 
+    hint.style.transition = 'opacity 0.3s ease';
     hint.style.opacity = '0';
 
-    // 予備動作：ブルブル震える（開く前のタメ）
-    wrap.style.transition = 'transform 0.1s ease';
-    let shakes = 0;
-    const shakeInterval = setInterval(() => {
-      shakes++;
-      const dir = shakes % 2 === 0 ? 1 : -1;
-      wrap.style.transform = `rotate(${dir * 3}deg) scale(1.02)`;
-      if (shakes >= 5) {
-        clearInterval(shakeInterval);
-        wrap.style.transform = 'rotate(0deg) scale(1)';
-        openLid();
-      }
-    }, 90);
+    // 少し間を置いてから、だんだん大きくなる震えをスタート（開く前のタメ）
+    setTimeout(() => {
+      wrap.style.transition = 'transform 0.13s ease';
+      let shakes = 0;
+      const totalShakes = 9;
+      const shakeInterval = setInterval(() => {
+        shakes++;
+        const progress = shakes / totalShakes;
+        const amp = 2 + progress * 5; // 徐々に揺れ幅が大きくなる
+        const dir = shakes % 2 === 0 ? 1 : -1;
+        wrap.style.transform = `rotate(${dir * amp}deg) scale(${1 + progress * 0.05})`;
+        if (shakes >= totalShakes) {
+          clearInterval(shakeInterval);
+          wrap.style.transform = 'rotate(0deg) scale(1)';
+          setTimeout(openLid, 220);
+        }
+      }, 130);
+    }, 350);
 
     function openLid() {
-      // フタが弾け飛んで開く
-      lid.style.transition = 'transform 0.65s cubic-bezier(0.2,0.9,0.35,1), opacity 0.5s ease 0.35s';
-      lid.style.transform = 'translate(calc(-50% + 26px), calc(-50% - 100px)) rotate(-75deg) scale(0.9)';
-      lid.style.opacity = '0';
+      // フタが一瞬グッと浮き上がる「タメ」を作ってから弾け飛ぶ
+      lid.style.transition = 'transform 0.25s ease';
+      lid.style.transform = 'translate(-50%,-56%) rotate(-8deg) scale(1.02)';
 
-      // 箱の中から光が溢れる
-      ring.style.transition = 'opacity 0.6s ease';
-      ring.style.opacity = '1';
-      ring.style.animation = 'mangoGlow 1s ease-in-out infinite';
-      spawnPresentParticles();
-
-      // 箱本体も発光
-      body.style.transition = 'filter 1s ease, transform 1s ease';
-      body.style.filter = 'drop-shadow(0 0 40px rgba(255,215,0,1)) drop-shadow(0 0 80px rgba(255,200,0,0.9)) brightness(1.7)';
-      body.style.transform = 'translate(-50%,-50%) scale(1.06)';
-
-      // 画面が白くフラッシュ
-      const flash = document.createElement('div');
-      flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 0.8s ease;pointer-events:none;';
-      overlay.appendChild(flash);
-      setTimeout(() => { flash.style.opacity = '1'; }, 700);
-
-      // リンクへ移動
       setTimeout(() => {
-        window.location.href = 'https://youtu.be/MR5406dIRcI';
-      }, 1700);
+        lid.style.transition = 'transform 1.15s cubic-bezier(0.15,0.7,0.3,1), opacity 0.7s ease 0.55s';
+        lid.style.transform = 'translate(calc(-50% + 34px), calc(-50% - 150px)) rotate(-100deg) scale(0.85)';
+        lid.style.opacity = '0';
+
+        // 箱の中から光がじわっと溢れて強くなっていく
+        ring.style.transition = 'opacity 1s ease';
+        ring.style.opacity = '1';
+        ring.style.animation = 'mangoGlow 1.4s ease-in-out infinite';
+
+        // 光の粒子を数回に分けて放出し、余韻を長く見せる
+        spawnPresentParticles();
+        setTimeout(spawnPresentParticles, 450);
+        setTimeout(spawnPresentParticles, 900);
+
+        // 箱本体もゆっくり発光していく
+        body.style.transition = 'filter 1.8s ease, transform 1.8s ease';
+        body.style.filter = 'drop-shadow(0 0 40px rgba(255,215,0,1)) drop-shadow(0 0 90px rgba(255,200,0,0.9)) brightness(1.8)';
+        body.style.transform = 'translate(-50%,-50%) scale(1.08)';
+
+        // 画面がゆっくり白くフラッシュ
+        const flash = document.createElement('div');
+        flash.id = 'present-flash';
+        flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 1.4s ease;pointer-events:none;';
+        overlay.appendChild(flash);
+        setTimeout(() => { flash.style.opacity = '1'; }, 1300);
+
+        // リンクは別タブで開き、このタブは少ししてからホーム画面へ戻す
+        setTimeout(() => {
+          window.open('https://youtu.be/MR5406dIRcI', '_blank');
+          setTimeout(returnHomeFromPresent, 500);
+        }, 3200);
+      }, 260);
     }
+  }
+
+  // プレゼント演出のあと、ホーム画面（進捗一覧）にフェードで戻す
+  function returnHomeFromPresent() {
+    const overlay = document.getElementById('present-overlay');
+    overlay.style.transition = 'opacity 0.6s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '';
+      overlay.style.transition = '';
+      const flash = document.getElementById('present-flash');
+      if (flash) flash.remove();
+      _presentOpened = false;
+      updateUI();
+    }, 600);
   }
 
   function spawnPresentParticles() {
