@@ -302,7 +302,7 @@
   // 各シーンが表示されてから最低このくらいは「タップして続ける」を
   // 出さない（＝タップを受け付けない）ようにする時間（ミリ秒）。
   // シーンごとに story.js 側で tapLockMs を指定すればそちらが優先される。
-  const TAP_LOCK_MS = 900;
+  const TAP_LOCK_MS = 2000;
 
   let sceneIndex = 0, isAnimating = false, onComplete = null;
   let currentScenes = [], currentStartBtnText = '';
