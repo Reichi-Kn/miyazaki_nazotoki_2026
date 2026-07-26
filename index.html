@@ -1556,13 +1556,32 @@
   // ブロック／無視されることがあり「たまにしか飛ばない」原因になっていた。
   // また、ホーム復帰（returnHomeFromPresent）は新タブの成否と無関係に、
   // 演出の自前タイマーだけで必ず実行されるようにする。
+  // 演出開始(タップ)から画面が真っ白になりきるまでの時間(ms)。
+  // ここを変えれば「白くなる瞬間」と「YouTubeへ飛ぶ瞬間」を一緒にずらせる。
+  const PRESENT_FLASH_DELAY = 5000;
+
   function openPresentBox() {
     if (_presentOpened) return;
     _presentOpened = true;
 
+    // タップした瞬間（ユーザー操作の直後）に、真っ黒な仮ページのタブを開いておく。
+    // 実際のYouTubeへの遷移は、opener側(このページ)が後から書き換えるのではなく
+    // 新タブ自身のスクリプトが PRESENT_FLASH_DELAY 後に自分で行う。
+    // こうするとタブを開く操作自体はユーザー操作に直結しているのでブロックされず、
+    // かつ画面が白くなる演出のタイミングにぴったり合わせられる。
     const url = 'https://youtu.be/MR5406dIRcI';
     try {
-      window.open(url, '_blank');
+      const presentTab = window.open('', '_blank');
+      if (presentTab) {
+        presentTab.document.open();
+        presentTab.document.write(
+          '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' +
+          '<body style="margin:0;height:100vh;background:#0a0800;"></body>' +
+          '<script>setTimeout(function(){ location.href = ' + JSON.stringify(url) + '; }, ' + PRESENT_FLASH_DELAY + ');<\/script>' +
+          '</html>'
+        );
+        presentTab.document.close();
+      }
     } catch (e) {
       // 開けなくても元タブの演出とホーム復帰はそのまま続行する
     }
@@ -1628,10 +1647,13 @@
         overlay.appendChild(flash);
         setTimeout(() => { flash.style.opacity = '1'; }, 1300);
 
-        // 元タブは自分の演出タイマーだけでホームに戻す（新タブの成否に依存しない）
+        // 元タブは自分の演出タイマーだけでホームに戻す（新タブの成否に依存しない）。
+        // このsetTimeoutはopenLid開始から260ms後の地点で動いているので、
+        // ここでの待ち時間は PRESENT_FLASH_DELAY(4700) から (350+1170+220+260)=2000 を引いた値にして
+        // クリック時点を基準にYouTube遷移と同じタイミングに揃える。
         setTimeout(() => {
           returnHomeFromPresent();
-        }, 3200);
+        }, PRESENT_FLASH_DELAY - 2000);
       }, 260);
     }
   }
