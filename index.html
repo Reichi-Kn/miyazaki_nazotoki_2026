@@ -1556,35 +1556,20 @@
   // ブロック／無視されることがあり「たまにしか飛ばない」原因になっていた。
   // また、ホーム復帰（returnHomeFromPresent）は新タブの成否と無関係に、
   // 演出の自前タイマーだけで必ず実行されるようにする。
-  // 演出開始(タップ)から画面が真っ白になりきるまでの時間(ms)。
-  // ここを変えれば「白くなる瞬間」と「YouTubeへ飛ぶ瞬間」を一緒にずらせる。
+  // 演出開始(タップ)からリンクへ飛ぶまでの時間(ms)。
   const PRESENT_FLASH_DELAY = 5000;
 
   function openPresentBox() {
     if (_presentOpened) return;
     _presentOpened = true;
 
-    // タップした瞬間（ユーザー操作の直後）に、真っ黒な仮ページのタブを開いておく。
-    // 実際のYouTubeへの遷移は、opener側(このページ)が後から書き換えるのではなく
-    // 新タブ自身のスクリプトが PRESENT_FLASH_DELAY 後に自分で行う。
-    // こうするとタブを開く操作自体はユーザー操作に直結しているのでブロックされず、
-    // かつ画面が白くなる演出のタイミングにぴったり合わせられる。
+    // about:blank の別タブを開く方式はやめ、今のタブ自身を
+    // PRESENT_FLASH_DELAY 後に直接YouTubeへ遷移させる。
+    // （別タブを開く方式だと、遷移前の一瞬 about:blank が見えてしまう問題があった）
     const url = 'https://youtu.be/MR5406dIRcI';
-    try {
-      const presentTab = window.open('', '_blank');
-      if (presentTab) {
-        presentTab.document.open();
-        presentTab.document.write(
-          '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' +
-          '<body style="margin:0;height:100vh;background:#0a0800;"></body>' +
-          '<script>setTimeout(function(){ location.href = ' + JSON.stringify(url) + '; }, ' + PRESENT_FLASH_DELAY + ');<\/script>' +
-          '</html>'
-        );
-        presentTab.document.close();
-      }
-    } catch (e) {
-      // 開けなくても元タブの演出とホーム復帰はそのまま続行する
-    }
+    setTimeout(() => {
+      window.location.href = url;
+    }, PRESENT_FLASH_DELAY);
 
     const overlay = document.getElementById('present-overlay');
     const wrap    = document.getElementById('present-box-wrap');
