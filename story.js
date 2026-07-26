@@ -486,6 +486,6 @@ const STORY = {
     },
   ],
 
-  qrPreAnimButtonText: 'プレゼントをひらく ✦',
+  qrPreAnimButtonText: '♦黄金のマンゴーが...?♦',
 
 };
