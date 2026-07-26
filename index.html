@@ -1152,7 +1152,7 @@
           updateUI();
         }
         // アニメーション → マンゴー光演出 → プレゼントボックス表示
-        playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || 'プレゼントをひらく ✦', () => {
+        playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || '♦黄金のマンゴーが...?♦', () => {
           playMangoFlash(() => showPresentBox());
         });
       } else {
@@ -1554,6 +1554,14 @@
     if (_presentOpened) return;
     _presentOpened = true;
 
+    // タップした直後（ユーザー操作の一部として扱われるタイミング）で
+    // 先に空のタブを開いておく。あとから location を書き換えれば
+    // ポップアップブロッカーに引っかからずに遷移できる。
+    let _presentTargetWindow = null;
+    try {
+      _presentTargetWindow = window.open('', '_blank');
+    } catch (e) { _presentTargetWindow = null; }
+
     const overlay = document.getElementById('present-overlay');
     const wrap    = document.getElementById('present-box-wrap');
     const body    = document.getElementById('present-box-body');
@@ -1615,10 +1623,16 @@
         overlay.appendChild(flash);
         setTimeout(() => { flash.style.opacity = '1'; }, 1300);
 
-        // リンクは別タブで開き、このタブは少ししてからホーム画面へ戻す
+        // 事前に開いておいたタブに動画リンクをセットする
+        // （タブがブロックされていた場合は、このタブ自体を遷移させる）
         setTimeout(() => {
-          window.open('https://youtu.be/MR5406dIRcI', '_blank');
-          setTimeout(returnHomeFromPresent, 500);
+          const url = 'https://youtu.be/MR5406dIRcI';
+          if (_presentTargetWindow && !_presentTargetWindow.closed) {
+            _presentTargetWindow.location.href = url;
+            setTimeout(returnHomeFromPresent, 500);
+          } else {
+            window.location.href = url;
+          }
         }, 3200);
       }, 260);
     }
@@ -1734,7 +1748,7 @@
       mission3: () => playMission3End(() => updateUI()),
       mission4: () => playMission4End(() => updateUI()),
       ending:   () => playEnding(() => showModal(MANGO_FINAL_MSG)),
-      qrpre:    () => playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || 'プレゼントをひらく ✦', () => playMangoFlash(() => showPresentBox())),
+      qrpre:    () => playOpening(STORY.qrPreAnim, STORY.qrPreAnimButtonText || '♦黄金のマンゴーが...?♦', () => playMangoFlash(() => showPresentBox())),
     };
     if (map[key]) map[key]();
   }
