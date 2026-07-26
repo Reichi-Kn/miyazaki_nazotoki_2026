@@ -1557,18 +1557,60 @@
   // また、ホーム復帰（returnHomeFromPresent）は新タブの成否と無関係に、
   // 演出の自前タイマーだけで必ず実行されるようにする。
   // 演出開始(タップ)からリンクへ飛ぶまでの時間(ms)。
-  const PRESENT_FLASH_DELAY = 5000;
+  const PRESENT_FLASH_DELAY = 4000;
+
+  const YOUTUBE_VIDEO_ID = 'MR5406dIRcI';
+  const YOUTUBE_WEB_URL = 'https://youtu.be/' + YOUTUBE_VIDEO_ID;
+
+  // YouTubeアプリを優先して開き、アプリが入っていない/開けない場合だけ
+  // ブラウザ(Web)のYouTubeにフォールバックする。
+  function openYouTube() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /Android/.test(ua);
+
+    if (isAndroid) {
+      // Androidのintentリンクはfallback urlをブラウザ側で自動処理してくれる
+      window.location.href =
+        'intent://www.youtube.com/watch?v=' + YOUTUBE_VIDEO_ID +
+        '#Intent;package=com.google.android.youtube;scheme=https;' +
+        'S.browser_fallback_url=' + encodeURIComponent(YOUTUBE_WEB_URL) + ';end';
+      return;
+    }
+
+    if (isIOS) {
+      // iOSはアプリの専用URLスキームを試し、一定時間ページが残っていたら
+      // (=アプリが開かなかったとみなし) Web版へフォールバックする。
+      let fellBack = false;
+      const fallbackTimer = setTimeout(() => {
+        fellBack = true;
+        window.location.href = YOUTUBE_WEB_URL;
+      }, 1500);
+
+      const onHide = () => {
+        if (document.hidden) {
+          clearTimeout(fallbackTimer);
+          document.removeEventListener('visibilitychange', onHide);
+        }
+      };
+      document.addEventListener('visibilitychange', onHide);
+
+      window.location.href = 'youtube://www.youtube.com/watch?v=' + YOUTUBE_VIDEO_ID;
+      return;
+    }
+
+    // PC等それ以外の環境はそのままWeb版
+    window.location.href = YOUTUBE_WEB_URL;
+  }
 
   function openPresentBox() {
     if (_presentOpened) return;
     _presentOpened = true;
 
     // about:blank の別タブを開く方式はやめ、今のタブ自身を
-    // PRESENT_FLASH_DELAY 後に直接YouTubeへ遷移させる。
-    // （別タブを開く方式だと、遷移前の一瞬 about:blank が見えてしまう問題があった）
-    const url = 'https://youtu.be/MR5406dIRcI';
+    // PRESENT_FLASH_DELAY 後に直接YouTube（アプリ優先）へ遷移させる。
     setTimeout(() => {
-      window.location.href = url;
+      openYouTube();
     }, PRESENT_FLASH_DELAY);
 
     const overlay = document.getElementById('present-overlay');
