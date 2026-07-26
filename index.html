@@ -1550,46 +1550,82 @@
     }, 900);
   }
 
-  function openPresentBox() {
-    if (_presentOpened) return;
-    _presentOpened = true;
+function openPresentBox() {
+  if (_presentOpened) return;
+  _presentOpened = true;
 
-    // タップした直後（ユーザー操作の一部として扱われるタイミング）で
-    // 先に空のタブを開いておく。あとから location を書き換えれば
-    // ポップアップブロッカーに引っかからずに遷移できる。
-    let _presentTargetWindow = null;
-    try {
-      _presentTargetWindow = window.open('', '_blank');
-    } catch (e) { _presentTargetWindow = null; }
+  // タップした瞬間（ユーザー操作の直後）に、最初からYouTubeのURLで新しいタブを開く。
+  // 空タブ＋あとから location.href を書き換える方式は、時間が経つとブラウザに
+  // 「ユーザー操作に紐づかない遷移」とみなされブロック/無視されることがあるため使わない。
+  const url = 'https://youtu.be/MR5406dIRcI';
+  try {
+    window.open(url, '_blank');
+  } catch (e) {
+    // 開けなくても元タブはそのままアニメーション→ホーム復帰を続ける
+  }
 
-    const overlay = document.getElementById('present-overlay');
-    const wrap    = document.getElementById('present-box-wrap');
-    const body    = document.getElementById('present-box-body');
-    const lid     = document.getElementById('present-box-lid');
-    const ring    = document.getElementById('present-glow-ring');
-    const hint    = document.getElementById('present-tap-hint');
+  const overlay = document.getElementById('present-overlay');
+  const wrap    = document.getElementById('present-box-wrap');
+  const body    = document.getElementById('present-box-body');
+  const lid     = document.getElementById('present-box-lid');
+  const ring    = document.getElementById('present-glow-ring');
+  const hint    = document.getElementById('present-tap-hint');
 
-    hint.style.transition = 'opacity 0.3s ease';
-    hint.style.opacity = '0';
+  hint.style.transition = 'opacity 0.3s ease';
+  hint.style.opacity = '0';
 
-    // 少し間を置いてから、だんだん大きくなる震えをスタート（開く前のタメ）
+  setTimeout(() => {
+    wrap.style.transition = 'transform 0.13s ease';
+    let shakes = 0;
+    const totalShakes = 9;
+    const shakeInterval = setInterval(() => {
+      shakes++;
+      const progress = shakes / totalShakes;
+      const amp = 2 + progress * 5;
+      const dir = shakes % 2 === 0 ? 1 : -1;
+      wrap.style.transform = `rotate(${dir * amp}deg) scale(${1 + progress * 0.05})`;
+      if (shakes >= totalShakes) {
+        clearInterval(shakeInterval);
+        wrap.style.transform = 'rotate(0deg) scale(1)';
+        setTimeout(openLid, 220);
+      }
+    }, 130);
+  }, 350);
+
+  function openLid() {
+    lid.style.transition = 'transform 0.25s ease';
+    lid.style.transform = 'translate(-50%,-56%) rotate(-8deg) scale(1.02)';
+
     setTimeout(() => {
-      wrap.style.transition = 'transform 0.13s ease';
-      let shakes = 0;
-      const totalShakes = 9;
-      const shakeInterval = setInterval(() => {
-        shakes++;
-        const progress = shakes / totalShakes;
-        const amp = 2 + progress * 5; // 徐々に揺れ幅が大きくなる
-        const dir = shakes % 2 === 0 ? 1 : -1;
-        wrap.style.transform = `rotate(${dir * amp}deg) scale(${1 + progress * 0.05})`;
-        if (shakes >= totalShakes) {
-          clearInterval(shakeInterval);
-          wrap.style.transform = 'rotate(0deg) scale(1)';
-          setTimeout(openLid, 220);
-        }
-      }, 130);
-    }, 350);
+      lid.style.transition = 'transform 1.15s cubic-bezier(0.15,0.7,0.3,1), opacity 0.7s ease 0.55s';
+      lid.style.transform = 'translate(calc(-50% + 34px), calc(-50% - 150px)) rotate(-100deg) scale(0.85)';
+      lid.style.opacity = '0';
+
+      ring.style.transition = 'opacity 1s ease';
+      ring.style.opacity = '1';
+      ring.style.animation = 'mangoGlow 1.4s ease-in-out infinite';
+
+      spawnPresentParticles();
+      setTimeout(spawnPresentParticles, 450);
+      setTimeout(spawnPresentParticles, 900);
+
+      body.style.transition = 'filter 1.8s ease, transform 1.8s ease';
+      body.style.filter = 'drop-shadow(0 0 40px rgba(255,215,0,1)) drop-shadow(0 0 90px rgba(255,200,0,0.9)) brightness(1.8)';
+      body.style.transform = 'translate(-50%,-50%) scale(1.08)';
+
+      const flash = document.createElement('div');
+      flash.id = 'present-flash';
+      flash.style.cssText = 'position:absolute;inset:0;background:#fff;opacity:0;transition:opacity 1.4s ease;pointer-events:none;';
+      overlay.appendChild(flash);
+      setTimeout(() => { flash.style.opacity = '1'; }, 1300);
+
+      // 元タブは自分のタイマーだけでホームに戻す（新タブの成否に依存しない）
+      setTimeout(() => {
+        returnHomeFromPresent();
+      }, 3200);
+    }, 260);
+  }
+}
 
     function openLid() {
       // フタが一瞬グッと浮き上がる「タメ」を作ってから弾け飛ぶ
