@@ -298,6 +298,12 @@
     </div>`);
 
   // ── エンジン ────────────────────────────────────────────────
+  // 演出中に連打してどんどんスキップされてしまうのを防ぐため、
+  // 各シーンが表示されてから最低このくらいは「タップして続ける」を
+  // 出さない（＝タップを受け付けない）ようにする時間（ミリ秒）。
+  // シーンごとに story.js 側で tapLockMs を指定すればそちらが優先される。
+  const TAP_LOCK_MS = 900;
+
   let sceneIndex = 0, isAnimating = false, onComplete = null;
   let currentScenes = [], currentStartBtnText = '';
   let revealTapped = false;
@@ -367,11 +373,12 @@
       spawnRevealSparks();
     }, 2200);
 
-    // ステップ3: 3.8秒後にタップヒント
+    // ステップ3: 3.8秒後にタップヒント（＝ここまではタップしても進めない）
+    const lockMs = (scene.tapLockMs != null) ? scene.tapLockMs : 3800;
     setTimeout(() => {
       revealTapEl.classList.add('show');
       isAnimating = false;
-    }, 3800);
+    }, lockMs);
   }
 
   // 登場時の光粒子
@@ -396,16 +403,28 @@
     }
   }
 
+  // ナレーション表示
+  // 連打対策：テキストが出てから一定時間（TAP_LOCK_MS、または scene.tapLockMs）が
+  // 経過するまでは isAnimating を true のままにし、タップヒントも出さない。
   function showNarration(scene) {
     isAnimating = true;
     revealEl.style.display = 'none';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     choicesEl.style.display = 'none';
-    tapHint.style.display = 'block';
-    setTimeout(() => { narText.textContent = scene.text; narText.classList.add('show'); isAnimating = false; }, 180);
+    tapHint.style.display = 'none';
+
+    setTimeout(() => { narText.textContent = scene.text; narText.classList.add('show'); }, 180);
+
+    const lockMs = (scene.tapLockMs != null) ? scene.tapLockMs : TAP_LOCK_MS;
+    setTimeout(() => {
+      tapHint.style.display = 'block';
+      isAnimating = false;
+    }, lockMs);
   }
 
+  // セリフ表示
+  // 連打対策：吹き出しが表示されてから一定時間が経過するまではタップを受け付けない。
   function showDialog(scene) {
     isAnimating = true;
     const doShow = () => {
@@ -415,7 +434,7 @@
       narText.classList.remove('show');
       dialogEl.classList.remove('show');
       choicesEl.style.display = 'none';
-      tapHint.style.display = 'block';
+      tapHint.style.display = 'none';
 
       const nameEl = `<div class="op-name ${scene.revealName ? 'reveal-anim' : ''}" style="color:${ch.color||'#E8A020'};text-align:${isRight?'right':'left'}">${ch.name||''}</div>`;
       dialogEl.innerHTML = `
@@ -428,9 +447,12 @@
         </div>`;
       setTimeout(() => {
         dialogEl.classList.add('show');
-        // tapLockMs が指定されていればその分だけ追加でタップをブロック
-        const lockMs = scene.tapLockMs || 0;
-        setTimeout(() => { isAnimating = false; }, lockMs);
+        // tapLockMs が指定されていればその時間、無ければデフォルトのロック時間を使う
+        const lockMs = (scene.tapLockMs != null) ? scene.tapLockMs : TAP_LOCK_MS;
+        setTimeout(() => {
+          tapHint.style.display = 'block';
+          isAnimating = false;
+        }, lockMs);
       }, 60);
     };
     if (scene.delayMs && scene.delayMs > 0) {
@@ -470,13 +492,14 @@
   }
 
   // 花火アニメ
+  // 連打対策：花火の演出（2周目の打ち上げも含む）が一通り終わるまでタップを受け付けない。
   function showFireworks(scene) {
     isAnimating = true;
     revealEl.style.display = 'none';
     narText.classList.remove('show');
     dialogEl.classList.remove('show');
     choicesEl.style.display = 'none';
-    tapHint.style.display = 'block';
+    tapHint.style.display = 'none';
 
     // ナレーションテキスト表示
     setTimeout(() => { narText.textContent = scene.text || ''; narText.classList.add('show'); }, 200);
@@ -497,7 +520,12 @@
       });
     }, 3200);
 
-    setTimeout(() => { isAnimating = false; }, 1500);
+    // 2周目の花火が落ち着く頃までロック（デフォルト4200ms）
+    const lockMs = (scene.tapLockMs != null) ? scene.tapLockMs : 4200;
+    setTimeout(() => {
+      tapHint.style.display = 'block';
+      isAnimating = false;
+    }, lockMs);
   }
 
   function launchFirework(xPct, yFromBottom, color) {
