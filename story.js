@@ -61,6 +61,7 @@ const STORY = {
       type:      'reveal',
       bg:        'bg_cave.jpg',
       character: 'mystery',
+      tapLockMs: 5500,
     },
     // シーン2: ???のまま話しかける
     {
