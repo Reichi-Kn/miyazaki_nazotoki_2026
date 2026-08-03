@@ -157,7 +157,7 @@ const STORY = {
     },
   ],
 
-  startButtonText: '✦冒険をはじめる ✦',
+  startButtonText: '✦冒険をはじめる✦',
 
   // ----------------------------------------------------------
   //  Mission1クリア後
@@ -186,7 +186,7 @@ const STORY = {
     },
   ],
 
-  mission1endButtonText: '✦次のミッションへ ✦',
+  mission1endButtonText: '✦次のミッションへ✦',
 
   // ----------------------------------------------------------
   //  Mission2クリア後・たーくん登場
@@ -405,13 +405,13 @@ const STORY = {
       bg:        'bg_miyazaki.jpg',
       character: 'takun',
       side:      'right',
-      text:      'がさごぞ...',
+      text:      'がさごそ...',
       delayMs:   2000,
       tapLockMs: 1000,
     },
   ],
 
-  endingButtonText: '✦ Thank you ✦',
+  endingButtonText: '✦Thank you✦',
   // ----------------------------------------------------------
   //  パスワード入力後 → QRコード表示前のアニメーション
   // ----------------------------------------------------------
@@ -486,6 +486,6 @@ const STORY = {
     },
   ],
 
-  qrPreAnimButtonText: '♦黄金のマンゴーが...?♦',
+  qrPreAnimButtonText: '✦黄金のマンゴーが...?✦',
 
 };
