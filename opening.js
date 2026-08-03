@@ -92,14 +92,22 @@
       width: 100%; height: 100%;
       object-fit: contain;
     }
+    /* ★修正: アニメーションは .show が付いてから開始する。
+       以前は #op-reveal-tap 単体に animation を無条件で付けていたため、
+       opacity:0 で隠しているつもりでも opTapPulse アニメーションが
+       常に(0.3〜0.9の間で)不透明度を動かし続けてしまい、
+       神様が登場する前の真っ暗な画面の時点から
+       「タップして続ける」がうっすら点滅して見えてしまっていた。 */
     #op-reveal-tap {
       font-size: 11px; color: rgba(255,248,220,0.4);
       letter-spacing: 0.2em;
-      animation: opTapPulse 2s ease-in-out infinite;
       position: relative; z-index: 2;
       opacity: 0; transition: opacity 1s ease;
     }
-    #op-reveal-tap.show { opacity: 1; }
+    #op-reveal-tap.show {
+      opacity: 1;
+      animation: opTapPulse 2s ease-in-out infinite;
+    }
 
     /* 光粒子 */
     .op-reveal-spark {
